@@ -148,6 +148,19 @@ button{font-family:inherit; cursor:pointer;}
 .search-box svg{width:15px; height:15px; flex:none; opacity:.7;}
 .search-box input{background:none; border:none; color:var(--white); font-size:13px; width:100%; outline:none;}
 .search-box input::placeholder{color:var(--mute-2);}
+.search-box-wrap{position:relative; flex:1; max-width:420px;}
+.search-panel{
+  position:absolute; top:calc(100% + 8px); left:0; right:0; z-index:60;
+  background:var(--panel-2); border:1px solid var(--line); border-radius:14px;
+  box-shadow:var(--shadow-pop); padding:8px; max-height:360px; overflow-y:auto;
+}
+.search-panel-msg{padding:14px 10px; font-size:12px; color:var(--mute-2); text-align:center;}
+.search-panel-msg a{color:var(--violet);}
+.search-result-row{
+  display:flex; align-items:center; gap:10px; padding:9px 8px; border-radius:10px; cursor:default;
+}
+.search-result-row:hover{background:rgba(255,255,255,.04);}
+.search-result-row b{font-size:12.5px; font-weight:600;}
 .topbar-actions{margin-left:auto; display:flex; align-items:center; gap:10px;}
 .icon-btn{
   width:36px; height:36px; border-radius:11px; background:var(--panel);
@@ -540,58 +553,15 @@ const FRIENDS = [
   {name:'Valentina Ospina', init:'VO', color:'linear-gradient(135deg,#FF3DBE,#F5A623)'},
 ];
 
-// Songs library — art class cycles art-1..art-8
-const SONGS = [
-  {id:'s1', title:'The Less I Know The Better', artist:'Tame Impala', art:'art-1', saved:true, tag:'Domingos 2019'},
-  {id:'s2', title:'Yonaguni', artist:'Bad Bunny', art:'art-2', saved:true, tag:'Verano 2021'},
-  {id:'s3', title:'Get Lucky', artist:'Daft Punk', art:'art-3', saved:true, tag:'Graduación'},
-  {id:'s4', title:'Malamente', artist:'Rosalía', art:'art-7', saved:false, tag:null},
-  {id:'s5', title:'505', artist:'Arctic Monkeys', art:'art-5', saved:true, tag:'Colegio'},
-  {id:'s6', title:'Feliz Cumpleaños Ferxxo', artist:'Feid', art:'art-4', saved:false, tag:null},
-  {id:'s7', title:'Karma Police', artist:'Radiohead', art:'art-6', saved:true, tag:'Primer trabajo'},
-  {id:'s8', title:'Instant Crush', artist:'Daft Punk ft. Julian Casablancas', art:'art-8', saved:false, tag:null},
-  {id:'s9', title:'Envolver', artist:'Anitta', art:'art-2', saved:false, tag:null},
-  {id:'s10', title:'Do I Wanna Know?', artist:'Arctic Monkeys', art:'art-1', saved:true, tag:'Universidad'},
-  {id:'s11', title:'La Fama', artist:'Rosalía ft. The Weeknd', art:'art-3', saved:false, tag:null},
-  {id:'s12', title:'Let It Happen', artist:'Tame Impala', art:'art-5', saved:false, tag:null},
-  {id:'s13', title:'Ojitos Lindos', artist:'Bad Bunny ft. Bomba Estéreo', art:'art-7', saved:true, tag:'Viaje Cartagena'},
-  {id:'s14', title:'Around The World', artist:'Daft Punk', art:'art-4', saved:false, tag:null},
-  {id:'s15', title:'15 Step', artist:'Radiohead', art:'art-6', saved:false, tag:null},
-  {id:'s16', title:'R U Mine?', artist:'Arctic Monkeys', art:'art-8', saved:false, tag:null},
-];
+// Biblioteca de canciones — VACÍA por diseño. Ares Galaxy ya no rellena tu
+// galaxia con canciones de ejemplo: solo existen aquí las canciones que
+// realmente vengan de una plataforma conectada (Spotify, YouTube), de una
+// búsqueda real, o de una importación de datos hecha por ti.
+const SONGS = [];
 
-const MEMORIES = [
-  {
-    id:'m1', songId:'s1', song:'The Less I Know The Better', artist:'Tame Impala', art:'art-1',
-    date:'12 may 2019', note:'La escuchaba todos los domingos mientras empezaba mi primer trabajo. Caminaba hasta la oficina con esta canción y sentía que todo podía salir bien.',
-    place:'Bogotá', people:['Yo'], tags:['Primer trabajo','Domingos','Rutina']
-  },
-  {
-    id:'m2', songId:'s13', song:'Ojitos Lindos', artist:'Bad Bunny ft. Bomba Estéreo', art:'art-7',
-    date:'3 ene 2022', note:'Sonó en el carro entrando a Cartagena a las 6am, después de manejar toda la noche desde Bogotá con Laura y Santiago.',
-    place:'Cartagena', people:['Laura','Santiago'], tags:['Viaje','Amigos','Costa']
-  },
-  {
-    id:'m3', songId:'s10', song:'Do I Wanna Know?', artist:'Arctic Monkeys', art:'art-1',
-    date:'19 ago 2015', note:'Laura me la mostró en un bus a las 2pm camino a la universidad. Fue la primera vez que sentí que la música me representaba.',
-    place:'Universidad Javeriana', people:['Laura'], tags:['Universidad','Descubrimiento','Laura me la mostró']
-  },
-  {
-    id:'m4', songId:'s3', song:'Get Lucky', artist:'Daft Punk', art:'art-3',
-    date:'27 nov 2018', note:'Sonó en la fiesta de graduación. Todos cantando mal pero felices. Ese día se sintió como un cierre de etapa real.',
-    place:'Bogotá', people:['Camila','Mateo','Valentina'], tags:['Graduación','Fiesta','Cierre de etapa']
-  },
-  {
-    id:'m5', songId:'s5', song:'505', artist:'Arctic Monkeys', art:'art-5',
-    date:'14 feb 2012', note:'La canción del colegio. La escuchábamos en los audífonos compartidos entre clase y clase, escondidos del profesor.',
-    place:'Colegio San Bartolomé', people:['Mateo'], tags:['Colegio','Nostalgia']
-  },
-  {
-    id:'m6', songId:'s7', song:'Karma Police', artist:'Radiohead', art:'art-6',
-    date:'2 sep 2019', note:'Primer día de trabajo real. Nervios, café frío y esta canción en el bus. Todavía la asocio con el miedo bueno de empezar algo.',
-    place:'Bogotá', people:['Yo'], tags:['Primer trabajo','Miedo bueno']
-  },
-];
+// Memorias — igual de vacío por defecto. Se llena con memorias reales que
+// tú creas (con o sin canción vinculada, con o sin foto real adjunta).
+const MEMORIES = [];
 
 const COMMUNITIES = [
   {id:'c1', name:'Indie Latino 2010–2020', members:2840, desc:'La década dorada del indie en español y sus primos anglo. Discusión, hallazgos y playlists colaborativas cada semana.', cover:'art-1', joined:true},
@@ -701,142 +671,138 @@ function restore(){
   }catch(e){ console.warn('No se pudo restaurar el estado local de Ares Galaxy', e); return false; }
 }
 
-// AI curator canned responses — matched by keyword
-const AI_INTRO = '¡Hola Alex! Soy tu bibliotecario musical. No reemplazo tu criterio — lo ayudo a conectar. Pregúntame por una época, un ánimo o una persona.';
+// AI curator — responde en base a TU música real (SONGS/MEMORIES/USER), no a
+// un guion fijo. Si todavía no hay canciones reales conectadas, lo dice con
+// claridad en vez de inventar resultados.
+const AI_INTRO = 'Soy tu bibliotecario musical. No reemplazo tu criterio — lo ayudo a conectar. Conecta Spotify o YouTube (o importa tu música) y podré ayudarte a organizarla; mientras tanto pregúntame por una época, un artista o una persona de tus recuerdos.';
 
 const AI_SUGGESTIONS = [
-  'Encuentra canciones parecidas a mi época universidad',
-  'Muéstrame música conectada con mi etapa Arctic Monkeys',
   'Organiza mi música por momentos importantes',
-  'Quiero descubrir música para una etapa nueva',
+  'Qué he guardado y qué no',
+  'Cuéntame quién aparece en mis recuerdos',
+  'Recomiéndame algo de lo que ya tengo',
 ];
 
 function aiRespond(query){
-  const q = query.toLowerCase();
-  if(q.includes('universidad')){
-    return {text:'Tu etapa de universidad (2013–2018) gira en torno a Arctic Monkeys, Radiohead y los primeros hallazgos que te mostró Laura. Aquí tienes tres canciones que comparten esa textura introspectiva y guitarras ásperas:', songs:['s10','s15','s5']};
+  const q = (query||'').toLowerCase();
+
+  if(!SONGS.length){
+    return {
+      text:'Todavía no tengo música real tuya con la que trabajar. Conecta Spotify o YouTube Music, o importa tus canciones desde Conexiones — en cuanto haya algo real ahí, puedo ayudarte a organizarlo y conectarlo con tus recuerdos.',
+      songs: []
+    };
   }
-  if(q.includes('arctic') || q.includes('monkeys')){
-    return {text:'Tu "etapa Arctic Monkeys" conecta con el indie rock británico de guitarras filosas y letras directas. Esto es lo nuevo que se mueve en esa misma escena:', songs:['s16','s10','s5']};
+
+  const matchArtist = (name)=> SONGS.filter(s=> s.artist && s.artist.toLowerCase().includes(name));
+
+  // Etapa/era real del usuario mencionada en la pregunta
+  const eraHit = (USER.eras||[]).find(e=> q.includes(e.toLowerCase().split(' ')[0]));
+  if(eraHit){
+    const ids = MEMORIES.filter(m=> m.songId && (m.tags||[]).some(t=> eraHit.toLowerCase().includes(t.toLowerCase()))).map(m=>m.songId);
+    const list = [...new Set(ids)];
+    if(list.length) return { text:`Conecté tu etapa "${eraHit}" con canciones que ya tienes en recuerdos reales:`, songs:list.slice(0,3) };
+    return { text:`Tu etapa "${eraHit}" todavía no tiene canciones vinculadas en tus recuerdos. Agrégala desde una memoria nueva.`, songs:[] };
   }
+
+  // Artista favorito real
+  const favHit = (USER.favArtists||[]).find(a=> q.includes(a.toLowerCase()));
+  if(favHit){
+    const list = matchArtist(favHit.toLowerCase()).map(s=>s.id);
+    if(list.length) return { text:`De ${favHit} esto es lo que ya tienes guardado en tu galaxia:`, songs:list.slice(0,3) };
+    return { text:`Marcaste a ${favHit} como uno de tus artistas, pero aún no tienes canciones suyas conectadas. Búscalas en Discover cuando conectes una plataforma.`, songs:[] };
+  }
+
+  // Persona real de tus memorias
+  const peopleHit = [...new Set(MEMORIES.flatMap(m=>m.people||[]))].find(p=> p && p.toLowerCase()!=='yo' && q.includes(p.toLowerCase()));
+  if(peopleHit){
+    const ids = MEMORIES.filter(m=> m.songId && (m.people||[]).includes(peopleHit)).map(m=>m.songId);
+    const list = [...new Set(ids)];
+    if(list.length) return { text:`${peopleHit} aparece en recuerdos conectados a estas canciones:`, songs:list.slice(0,3) };
+    return { text:`${peopleHit} aparece en tu galaxia, pero sin canciones vinculadas todavía.`, songs:[] };
+  }
+
+  // Organización por momentos reales
   if(q.includes('organiza') || q.includes('momento')){
-    return {text:'Organicé tu biblioteca en 4 momentos: Colegio (nostalgia y descubrimiento en grupo), Universidad (identidad propia, Laura como curadora), Primer trabajo (rutina y calma) y Ahora (exploración activa). Puedes verlo completo en Mi Galaxia → filtro por etapa.', songs:['s5','s10','s7']};
+    const byTag = {};
+    MEMORIES.forEach(m=> (m.tags||[]).forEach(t=>{ if(!m.songId) return; byTag[t] = byTag[t]||[]; byTag[t].push(m.songId); }));
+    const tags = Object.keys(byTag);
+    if(tags.length) return { text:`Tu archivo hoy se organiza en estos momentos reales: ${tags.join(', ')}. Puedes verlo completo en Mi Galaxia.`, songs: [...new Set(byTag[tags[0]])].slice(0,3) };
+    return { text:'Aún no tienes recuerdos con canción y etiqueta suficientes para organizar por momentos — agrega alguno desde una memoria nueva.', songs: [] };
   }
-  if(q.includes('etapa nueva') || q.includes('nueva etapa') || q.includes('descubrir')){
-    return {text:'Para una etapa nueva no te recomiendo más de lo mismo — te propongo un cruce: la calidez de Rosalía con la introspección de Tame Impala. Tres canciones que aún no guardas y podrían abrir esa puerta:', songs:['s4','s11','s12']};
+
+  // Qué has guardado / qué no
+  if(q.includes('guardad') || q.includes('guardé') || q.includes('guarde')){
+    const saved = SONGS.filter(s=>s.saved).map(s=>s.id);
+    const notSaved = SONGS.filter(s=>!s.saved).map(s=>s.id);
+    if(saved.length) return { text:`Tienes ${saved.length} canción(es) guardada(s) en tu archivo. Aquí van algunas:`, songs: saved.slice(0,3) };
+    if(notSaved.length) return { text:'Todavía no has guardado ninguna — esto es lo que tienes disponible sin guardar aún:', songs: notSaved.slice(0,3) };
+    return { text:'No encuentro canciones en tu galaxia todavía.', songs:[] };
   }
-  if(q.includes('laura')){
-    return {text:'Laura aparece en 3 recuerdos de tu galaxia, casi siempre como quien descubre la canción primero. Su gusto se mueve entre indie latino y hallazgos inesperados. Esto es lo que ella guardó esta semana:', songs:['s4','s9']};
+
+  // Descubrir / recomendar desde lo ya real que tienes
+  if(q.includes('descubr') || q.includes('recomien') || q.includes('nueva')){
+    const unsaved = SONGS.filter(s=>!s.saved).map(s=>s.id);
+    if(unsaved.length) return { text:'De lo que ya está en tu galaxia, esto es lo que aún no has guardado:', songs: unsaved.slice(0,3) };
   }
-  if(q.includes('bad bunny') || q.includes('feid') || q.includes('reggaeton') || q.includes('reggaetón')){
-    return {text:'Del lado urbano tu gusto se inclina por producción experimental más que por lo comercial. Prueba estas:', songs:['s2','s13','s6']};
-  }
-  return {text:'Puedo ayudarte a conectar esto con tu historia. Prueba preguntarme por una época ("universidad", "colegio"), una persona ("Laura") o un estado de ánimo. Mientras tanto, aquí hay algo que cruza con tu gusto actual:', songs:['s4','s12','s9']};
+
+  const saved = SONGS.filter(s=>s.saved).map(s=>s.id);
+  const fallback = (saved.length?saved:SONGS.map(s=>s.id)).slice(0,3);
+  return { text:'Puedo ayudarte a conectar esto con tu historia real. Prueba preguntarme por una época, un artista favorito o una persona de tus recuerdos. Mientras tanto, esto es parte de tu música real:', songs: fallback };
 }
 
-/* ===== ARES GALAXY — PREVIEW AUDIO ENGINE =====
-   Generates short, original, procedurally-composed synth micro-clips per song.
-   Nothing here reproduces a real recording — each "preview" is a deterministic
-   generative arpeggio derived from the song's id/title, so the same song always
-   sounds the same, and different songs sound distinct from each other.
+/* ===== ARES GALAXY — UTILIDADES DE HASH =====
+   hashStr se usa para asignar de forma determinista una clase de gradiente
+   (art-N, puramente decorativa) y para generar IDs estables de canciones
+   importadas. No genera ni representa audio.
 */
-
-let audioCtx = null;
-let current = null; // { songId, ctx, nodes[], startTime, duration, tickHandle }
-
-function ensureCtx(){
-  if(!audioCtx){
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    audioCtx = new Ctx();
-  }
-  if(audioCtx.state === 'suspended') audioCtx.resume();
-  return audioCtx;
-}
-
 function hashStr(s){
   let h = 2166136261;
   for(let i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
   return h >>> 0;
 }
-function mulberry32(seed){
-  return function(){
-    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
 
-const SCALES = {
-  majorPenta: [0,2,4,7,9],
-  minorPenta: [0,3,5,7,10],
-  dorian: [0,2,3,5,7,9,10],
-  mixolydian: [0,2,4,5,7,9,10],
-};
-const SCALE_NAMES = Object.keys(SCALES);
-
-// 8 timbre presets, cycling with the 8 art-N gradient classes so a song's
-// sound and its visual identity stay loosely coherent.
-const PRESETS = [
-  {wave:'triangle', filter:2200, delay:.16, wet:.18, noteDur:.42, attack:.02},
-  {wave:'square',   filter:1400, delay:.12, wet:.12, noteDur:.28, attack:.005},
-  {wave:'sine',     filter:3200, delay:.22, wet:.22, noteDur:.50, attack:.04},
-  {wave:'triangle', filter:1200, delay:.28, wet:.28, noteDur:.55, attack:.06},
-  {wave:'sawtooth', filter:1800, delay:.14, wet:.15, noteDur:.32, attack:.01},
-  {wave:'sine',     filter:2600, delay:.20, wet:.20, noteDur:.40, attack:.03},
-  {wave:'square',   filter:2000, delay:.18, wet:.16, noteDur:.36, attack:.01},
-  {wave:'triangle', filter:1600, delay:.24, wet:.20, noteDur:.46, attack:.03},
-];
-
-function buildProfile(song){
-  const rnd = mulberry32(hashStr((song.id||'') + '|' + (song.title||'')));
-  const scale = SCALES[SCALE_NAMES[Math.floor(rnd()*SCALE_NAMES.length)]];
-  const rootMidiOffset = Math.floor(rnd()*10) - 4; // small deterministic range
-  const rootFreq = 220 * Math.pow(2, rootMidiOffset/12);
-  const artIndex = parseInt((song.art||'art-1').split('-')[1], 10) || 1;
-  const preset = PRESETS[(artIndex-1) % PRESETS.length];
-  const noteCount = 8 + Math.floor(rnd()*5);
-  const degrees = [];
-  for(let i=0;i<noteCount;i++) degrees.push(scale[Math.floor(rnd()*scale.length)]);
-  degrees.push(degrees[0], degrees[1] !== undefined ? degrees[1] : degrees[0]); // loop-back hook
-  return { rootFreq, degrees, preset };
-}
+let current = null; // { songId, kind:'spotify'|'youtube' }
 
 function stopPreview(){
   if(!current) return;
   if(current.kind==='spotify'){ spotifyPausePlayback(); }
   else if(current.kind==='youtube'){ youtubePausePlayback(); }
-  else {
-    const { nodes, tickHandle, timeoutId } = current;
-    (nodes||[]).forEach(n=>{
-      try{ n.stop && n.stop(); }catch(e){}
-      try{ n.disconnect && n.disconnect(); }catch(e){}
-    });
-    if(tickHandle) cancelAnimationFrame(tickHandle);
-    if(timeoutId) clearTimeout(timeoutId);
-  }
   stopMediaTicker();
   current = null;
   if(typeof onPreviewChange === 'function') onPreviewChange(null);
 }
 
 /* ---------- REPRODUCCIÓN: despachador único =====
-   Decide entre audio real (Spotify Web Playback SDK / YouTube IFrame Player)
-   y el clip sintético generativo, según de dónde venga la canción y si hay
-   una conexión real activa. Si el audio real falla (p.ej. sin Premium), cae
-   al clip generativo mostrando siempre un aviso claro de cuál está sonando.
+   Solo existen dos formas de sonido en Ares Galaxy: el Web Playback SDK de
+   Spotify (pista completa real, requiere Premium) y el reproductor oficial
+   de YouTube. No hay ningún motor de audio simulado. Si el audio real no
+   está disponible por cualquier razón, Ares Galaxy nunca inventa un sonido:
+   ofrece la alternativa oficial más cercana (abrir la canción en Spotify) o
+   avisa con claridad que no hay ninguna fuente de audio para esa canción.
 */
+function spotifyTrackId(song){ return song && song.source==='spotify' ? song.id.replace(/^sp-/, '') : null; }
+function openSpotifyExternally(song, msg){
+  const tid = spotifyTrackId(song);
+  const url = tid ? `https://open.spotify.com/track/${tid}` : `https://open.spotify.com/search/${encodeURIComponent((song.title||'')+' '+(song.artist||''))}`;
+  window.open(url, '_blank', 'noopener');
+  toast(msg || 'Abriendo en Spotify');
+}
 async function playPreview(song){
   if(!song) return;
   if(current && current.songId === song.id){ stopPreview(); return; }
   stopPreview();
 
   if(song.source==='spotify' && CONNECTIONS.spotify.connected){
-    const trackId = song.id.replace(/^sp-/, '');
+    const trackId = spotifyTrackId(song);
     current = { songId: song.id, kind:'spotify' };
     if(typeof onPreviewChange === 'function') onPreviewChange({ songId:song.id, song, duration:null, real:true, platformLabel:'Spotify' });
     const ok = await spotifyPlayTrack(trackId);
-    if(!ok){ current = null; playSynthPreview(song); return; }
+    if(!ok){
+      current = null;
+      if(typeof onPreviewChange === 'function') onPreviewChange(null);
+      openSpotifyExternally(song, 'No pudimos reproducirla aquí dentro (¿tu cuenta es Premium?) — la abrimos en Spotify');
+      return;
+    }
     startMediaTicker(async ()=>{
       if(!spPlayer) return null;
       const st = await spPlayer.getCurrentState();
@@ -860,12 +826,16 @@ async function playPreview(song){
       });
     }catch(e){
       console.error(e);
+      current = null;
+      if(typeof onPreviewChange === 'function') onPreviewChange(null);
       toast('No se pudo reproducir ese video de YouTube');
-      current = null; playSynthPreview(song);
     }
     return;
   }
-  playSynthPreview(song);
+  // Sin reproductor real conectado para esta canción: la mejor alternativa
+  // honesta es abrirla directamente en Spotify si sabemos que existe ahí.
+  if(song.source==='spotify'){ openSpotifyExternally(song); return; }
+  toast('Todavía no hay una fuente de audio real conectada para esta canción');
 }
 
 let mediaTicker = null;
@@ -880,65 +850,6 @@ function startMediaTicker(getProgress){
   }, 400);
 }
 function stopMediaTicker(){ if(mediaTicker){ clearInterval(mediaTicker); mediaTicker=null; } }
-
-function playSynthPreview(song){
-  if(!song) return;
-  const ctx = ensureCtx();
-
-  const profile = buildProfile(song);
-  const now = ctx.currentTime + 0.04;
-
-  const masterGain = ctx.createGain(); masterGain.gain.value = 0;
-  const filter = ctx.createBiquadFilter(); filter.type='lowpass'; filter.frequency.value = profile.preset.filter; filter.Q.value = 0.7;
-  const delay = ctx.createDelay(1.0); delay.delayTime.value = profile.preset.delay;
-  const feedback = ctx.createGain(); feedback.gain.value = 0.28;
-  const wet = ctx.createGain(); wet.gain.value = profile.preset.wet;
-
-  filter.connect(masterGain);
-  filter.connect(delay);
-  delay.connect(feedback); feedback.connect(delay);
-  delay.connect(wet);
-  masterGain.connect(ctx.destination);
-  wet.connect(ctx.destination);
-
-  masterGain.gain.setValueAtTime(0, now);
-  masterGain.gain.linearRampToValueAtTime(0.22, now + 0.08);
-
-  const nodes = [masterGain, filter, delay, feedback, wet];
-  let t = now;
-  profile.degrees.forEach(deg=>{
-    const freq = profile.rootFreq * Math.pow(2, deg/12);
-    const osc = ctx.createOscillator(); osc.type = profile.preset.wave; osc.frequency.value = freq;
-    const noteGain = ctx.createGain(); noteGain.gain.value = 0;
-    osc.connect(noteGain); noteGain.connect(filter);
-    const dur = profile.preset.noteDur;
-    noteGain.gain.setValueAtTime(0.0001, t);
-    noteGain.gain.linearRampToValueAtTime(0.9, t + profile.preset.attack);
-    noteGain.gain.exponentialRampToValueAtTime(0.001, t + dur);
-    osc.start(t);
-    osc.stop(t + dur + 0.05);
-    nodes.push(osc, noteGain);
-    t += dur * 0.86;
-  });
-
-  const totalDur = (t - now) + 0.3;
-  masterGain.gain.setValueAtTime(0.22, now + totalDur - 0.35);
-  masterGain.gain.linearRampToValueAtTime(0, now + totalDur - 0.02);
-
-  current = { songId: song.id, kind:'synth', ctx, nodes, startTime: now, duration: totalDur, tickHandle:null, timeoutId:null };
-  if(typeof onPreviewChange === 'function') onPreviewChange({ songId: song.id, song, duration: totalDur, real:false });
-
-  function tick(){
-    if(!current || current.songId !== song.id) return;
-    const elapsed = ctx.currentTime - current.startTime;
-    const progress = Math.max(0, Math.min(1, elapsed / current.duration));
-    if(typeof onPreviewProgress === 'function') onPreviewProgress(progress);
-    if(progress >= 1){ stopPreview(); return; }
-    current.tickHandle = requestAnimationFrame(tick);
-  }
-  current.tickHandle = requestAnimationFrame(tick);
-  current.timeoutId = setTimeout(()=>{ if(current && current.songId===song.id) stopPreview(); }, (totalDur+0.25)*1000);
-}
 
 /* ===== ARES GALAXY — GALAXY VISUALIZATION (signature element) =====
    Builds a graph of: me -> songs -> (era/tag, place, person) satellites, and me -> joined communities.
@@ -959,7 +870,9 @@ function buildGalaxyGraph(){
   }
   nodes['me'] = { id:'me', type:'me', label:(USER.name||'Tú').split(' ')[0], ring:0 };
 
-  const mainSongIds = [...new Set(MEMORIES.map(m=>m.songId))];
+  // Solo canciones reales (con songId real) forman el anillo de "song" — una
+  // memoria sin canción vinculada todavía no fabrica un nodo de canción falso.
+  const mainSongIds = [...new Set(MEMORIES.map(m=>m.songId).filter(Boolean))];
 
   mainSongIds.forEach(sid=>{
     const song = findSong(sid);
@@ -968,6 +881,7 @@ function buildGalaxyGraph(){
   });
 
   MEMORIES.forEach(m=>{
+    if(!m.songId) return; // sin canción real vinculada aún: no genera satélites de galaxia
     const songNodeId = 'song-'+m.songId;
     const satellites = [];
     (m.tags||[]).forEach(t=> satellites.push(['tag', t]));
@@ -1198,10 +1112,23 @@ function mountGalaxy(canvasId, opts){
     const p = getPos(e);
     const h = findHover(p.x,p.y);
     if(!interactive){ if(opts.onClick) opts.onClick(); return; }
-    if(h && h.type!=='me'){
-      state.drawer = { kind:'node', node: h };
-      renderOverlays();
+    if(!h || h.type==='me') return;
+    // La galaxia ES el reproductor: un click en una canción la reproduce/pausa
+    // directamente. Para ver el detalle (memoria, portada, etc.) doble click.
+    if(h.type==='song'){
+      togglePreview(h.songId);
+      return;
     }
+    state.drawer = { kind:'node', node: h };
+    renderOverlays();
+  });
+  canvas.addEventListener('dblclick', (e)=>{
+    if(!interactive) return;
+    const p = getPos(e);
+    const h = findHover(p.x,p.y);
+    if(!h || h.type==='me') return;
+    state.drawer = { kind:'node', node: h };
+    renderOverlays();
   });
 
   const g = { raf:null, onResize, canvasEl:canvas };
@@ -1330,6 +1257,19 @@ function songFromSpotifyTrack(t, extra){
     art:artClassFor(t.id), saved:true, tag:null, source:'spotify'
   }, extra||{}));
 }
+// Resultado de una búsqueda real (Spotify Search API) — si la canción ya
+// existe en tu galaxia no le tocamos su estado "guardada"; si es nueva,
+// entra como encontrada-pero-no-guardada hasta que la agregues.
+function songFromSpotifySearchTrack(t){
+  if(!t || !t.id) return null;
+  const id = 'sp-'+t.id;
+  const existing = SONGS.find(s=>s.id===id);
+  if(existing) return existing;
+  return upsertSong({
+    id, title:t.name, artist:(t.artists||[]).map(a=>a.name).join(', '),
+    art:artClassFor(t.id), saved:false, tag:null, source:'spotify'
+  });
+}
 async function spotifySync(){
   try{
     const me = await spFetch('/me');
@@ -1337,6 +1277,12 @@ async function spotifySync(){
     try{ const top = await spFetch('/me/top/tracks', {limit:10, time_range:'medium_term'}); (top.items||[]).forEach(t=>{ songFromSpotifyTrack(t, {tag:'Top Spotify'}); pulled++; }); }catch(e){ console.warn('top tracks', e); }
     try{ const saved = await spFetch('/me/tracks', {limit:20}); (saved.items||[]).forEach(it=>{ songFromSpotifyTrack(it.track); pulled++; }); }catch(e){ console.warn('saved tracks', e); }
     try{ const recent = await spFetch('/me/player/recently-played', {limit:20}); (recent.items||[]).forEach(it=>{ songFromSpotifyTrack(it.track, {tag:'Escuchado recientemente'}); pulled++; }); }catch(e){ console.warn('recently played', e); }
+    // Artistas favoritos reales (no la lista de ejemplo del perfil demo)
+    try{
+      const topArtists = await spFetch('/me/top/artists', {limit:8, time_range:'medium_term'});
+      const names = (topArtists.items||[]).map(a=>a.name).filter(Boolean);
+      if(names.length) USER.favArtists = names;
+    }catch(e){ console.warn('top artists', e); }
     CONNECTIONS.spotify.connected = true;
     CONNECTIONS.spotify.profile = { name: me.display_name, id: me.id, product: me.product };
     CONNECTIONS.spotify.lastSync = Date.now();
@@ -1344,6 +1290,10 @@ async function spotifySync(){
     const firstBoot = !state.onboarded;
     if(firstBoot){
       if(me.display_name){ USER.name = me.display_name; USER.handle = '@'+slugify(me.display_name); }
+      // Sin onboarding manual no hay ninguna fuente real de "etapas de vida"
+      // (Spotify no expone eso) — mejor vacío y honesto que la lista de
+      // ejemplo del perfil demo.
+      USER.eras = [];
       state.chat = [{ role:'ai', text:`¡Hola ${USER.name.split(' ')[0]}! Conecté tu cuenta de Spotify y ya empecé a tejer tu galaxia con tu música real.`, songs:[] }];
       state.onboarded = true;
       state.gate = 'app';
@@ -1473,10 +1423,16 @@ async function ensureYoutubePlayer(){
         onStateChange: (e)=>{ if(window.YT && e.data===YT.PlayerState.ENDED) stopPreview(); },
         onError: ()=>{
           const failedSong = current && current.kind==='youtube' ? findSong(current.songId) : null;
-          toast('Ese video de YouTube no se puede reproducir aquí (restringido o eliminado)' + (failedSong ? ' — sonando el clip generativo' : ''));
           const el = document.getElementById('yt-player-mount'); if(el) el.style.display='none';
           current = null;
-          if(failedSong) playSynthPreview(failedSong); else if(typeof onPreviewChange==='function') onPreviewChange(null);
+          if(typeof onPreviewChange==='function') onPreviewChange(null);
+          if(failedSong && failedSong.source==='youtube'){
+            const vid = failedSong.id.replace(/^yt-/, '');
+            toast('Ese video no se puede reproducir aquí (restringido o eliminado) — lo abrimos en YouTube');
+            window.open(`https://www.youtube.com/watch?v=${vid}`, '_blank', 'noopener');
+          } else {
+            toast('Ese video de YouTube no se puede reproducir aquí (restringido o eliminado)');
+          }
         },
       }
     });
@@ -1684,6 +1640,7 @@ const state = {
   discoverTab: 'songs',
   galaxyFilter: 'all',
   playing: null,     // {songId, song, duration}
+  search: { query:'', results:[], loading:false, error:null }, // resultados reales de Spotify Search API
 };
 
 function toast(msg){
@@ -1705,7 +1662,7 @@ function toggleSave(id){
   render();
 }
 
-/* ---------- PREVIEW PLAYBACK (generative micro-clips) ---------- */
+/* ---------- REPRODUCCIÓN REAL (Spotify / YouTube) ---------- */
 function togglePreview(id, evt){
   if(evt){ evt.stopPropagation(); evt.preventDefault && evt.preventDefault(); }
   const song = findSong(id);
@@ -1735,7 +1692,7 @@ function renderMiniPlayer(){
       <button class="mini-player-stop" onclick="togglePreview('${song.id}')" title="Detener">${ICONS.pause}</button>
     </div>
     <div class="mini-player-progress"><div class="mini-player-progress-fill" id="mp-progress-fill"></div></div>
-    <div class="mini-player-note">${state.playing.real ? `AUDIO REAL VÍA ${state.playing.platformLabel.toUpperCase()}` : 'MICRO-CLIP GENERATIVO · NO ES EL AUDIO ORIGINAL'}</div>
+    <div class="mini-player-note">AUDIO REAL VÍA ${(state.playing.platformLabel || '').toUpperCase()}</div>
   </div>`;
 }
 
@@ -1783,7 +1740,10 @@ function shellHTML(){
   </aside>
   <div class="main-col">
     <header class="topbar">
-      <div class="search-box">${ICONS.search}<input placeholder="Buscar canciones, artistas, escenas, personas…" id="global-search"/></div>
+      <div class="search-box-wrap">
+        <div class="search-box">${ICONS.search}<input placeholder="Buscar música real en Spotify…" id="global-search" autocomplete="off"/></div>
+        <div id="search-panel-root"></div>
+      </div>
       <div class="topbar-actions">
         <button class="icon-btn" title="Notificaciones">${ICONS.bell}</button>
         <button class="pill-btn" id="btn-add-memory">${ICONS.plus} Nueva memoria</button>
@@ -1824,7 +1784,7 @@ function viewHome(){
     <div class="panel panel-pad" style="display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:22px; border-color:var(--violet);">
       <div>
         <div class="section-title" style="margin-bottom:6px;"><span class="dot"></span>Conecta tu música real</div>
-        <p class="page-sub" style="margin:0;">Ares Galaxy funciona mejor conectada a Spotify, YouTube u otra plataforma que ya uses. Ahora mismo estás viendo datos de ejemplo.</p>
+        <p class="page-sub" style="margin:0;">Tu galaxia empieza vacía a propósito: nada de lo que veas aquí es música de ejemplo. Conecta Spotify, YouTube u otra plataforma (o importa tus datos) para que empiece a llenarse con tu música real.</p>
       </div>
       <a href="#/connections" class="pill-btn" style="flex:none;">${ICONS.link} Conectar plataformas</a>
     </div>` : ''}
@@ -1835,7 +1795,8 @@ function viewHome(){
         <div class="galaxy-hint">Tu galaxia · toca para explorar en detalle</div>
       </div>
       <div class="panel panel-pad" style="display:flex; flex-direction:column;">
-        <div class="section-title" style="margin-bottom:14px;"><span class="dot"></span>Actividad de amigos</div>
+        <div class="section-title" style="margin-bottom:2px;"><span class="dot"></span>Actividad de amigos</div>
+        <p style="font-size:10.5px; color:var(--mute-2); font-family:'JetBrains Mono'; margin-bottom:12px;">Vista ilustrativa — mostrar la actividad real de tus amigos requeriría que ellos también conectaran su cuenta a un backend compartido, algo que este prototipo local no tiene todavía.</p>
         <div style="flex:1;">
           ${activity.map(a=>`
             <div class="activity-row">
@@ -1853,7 +1814,7 @@ function viewHome(){
         <div class="section-title"><span class="dot"></span>Recomendaciones humanas para ti</div>
         <a href="#/discover" class="link-more">Ver descubrimiento ${ICONS.chevr}</a>
       </div>
-      <div class="grid g4">${recos.map(songCard).join('')}</div>
+      ${recos.length ? `<div class="grid g4">${recos.map(songCard).join('')}</div>` : `<div class="panel panel-pad" style="text-align:center; color:var(--mute-2); font-size:12.5px;">${anyRealConnection ? 'No encontramos más canciones sin guardar por ahora.' : 'Aquí aparecerán canciones reales en cuanto conectes una plataforma.'}</div>`}
     </div>
 
     <div class="grid g2" style="grid-template-columns:1fr 1fr;">
@@ -1863,7 +1824,7 @@ function viewHome(){
           <a href="#/archive" class="link-more">Archivo completo ${ICONS.chevr}</a>
         </div>
         <div style="display:flex; flex-direction:column; gap:12px;">
-          ${recent.map(memoryRow).join('')}
+          ${recent.length ? recent.map(memoryRow).join('') : `<div class="panel panel-pad" style="text-align:center; color:var(--mute-2); font-size:12.5px;">Aún no tienes memorias guardadas — crea la primera desde una canción real.</div>`}
         </div>
       </div>
       <div>
@@ -1882,7 +1843,7 @@ function viewHome(){
 function memoryRow(m){
   return `
   <div class="panel panel-pad" style="display:flex; gap:14px; align-items:center; cursor:pointer;" onclick="openMemoryDrawer('${m.id}')">
-    <div class="song-art ${m.art}" style="width:52px; height:52px; margin:0; flex:none; border-radius:10px;"></div>
+    <div class="song-art ${m.photo?'':m.art}" style="width:52px; height:52px; margin:0; flex:none; border-radius:10px; ${m.photo?`background-image:url('${m.photo}'); background-size:cover; background-position:center;`:''}"></div>
     <div style="flex:1; min-width:0;">
       <div style="font-weight:600; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${m.song}</div>
       <div style="font-size:11.5px; color:var(--mute); margin-top:2px;">${m.place} · ${m.date}</div>
@@ -1904,13 +1865,13 @@ function songCard(s){
   return `
   <div class="song-card ${isPlaying?'is-playing':''}">
     <div class="song-art ${s.art}">
-      <div class="play-ring ${isPlaying?'is-playing':''}" onclick="togglePreview('${s.id}', event)" title="${isPlaying?'Detener preview':'Escuchar micro-clip'}">${isPlaying?ICONS.pause:ICONS.play}</div>
+      <div class="play-ring ${isPlaying?'is-playing':''}" onclick="togglePreview('${s.id}', event)" title="${isPlaying?'Detener':'Reproducir'}">${isPlaying?ICONS.pause:ICONS.play}</div>
     </div>
     <div class="song-title">${s.title}</div>
     <div class="song-artist">${s.artist}</div>
     <div class="song-meta-row">
       <div style="display:flex; gap:6px; align-items:center; overflow:hidden;">
-        ${s.tag ? `<span class="chip on">${s.tag}</span>` : `<span class="chip">${isPlaying?'sonando…':'preview 0:08'}</span>`}
+        ${s.tag ? `<span class="chip on">${s.tag}</span>` : (isPlaying ? `<span class="chip">sonando…</span>` : '')}
         ${sourceBadge(s)}
       </div>
       <button class="mini-btn ${s.saved?'saved':''}" title="Guardar" onclick="toggleSave('${s.id}')">${ICONS.save}</button>
@@ -1926,21 +1887,24 @@ function viewDiscover(){
     {id:'scenes', label:'Escenas'},
     {id:'curators', label:'Curadores'},
   ];
+  const emptyPanel = (msg)=> `<div class="panel panel-pad" style="text-align:center; color:var(--mute-2); font-size:12.5px;">${msg}</div>`;
   let body = '';
   if(state.discoverTab==='songs'){
-    body = `<div class="grid g4">${SONGS.map(songCard).join('')}</div>`;
+    body = SONGS.length ? `<div class="grid g4">${SONGS.map(songCard).join('')}</div>` : emptyPanel('Aún no hay canciones reales aquí. Conecta Spotify o YouTube, importa tu música, o usa el buscador para empezar a llenar tu galaxia.');
   } else if(state.discoverTab==='artists'){
     const artists = [...new Set(SONGS.map(s=>s.artist.split(' ft.')[0]))];
-    body = `<div class="grid g4">${artists.map((a,i)=>`
+    body = artists.length ? `<div class="grid g4">${artists.map((a,i)=>`
       <div class="panel panel-pad" style="text-align:center;">
         <div class="avatar" style="width:64px;height:64px;font-size:20px;margin:0 auto 12px;background:linear-gradient(135deg,${['var(--violet),var(--magenta)','var(--blue),var(--violet)','var(--magenta),var(--amber)','var(--amber),var(--violet)'][i%4]})">${a.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
         <div style="font-weight:600; font-size:13.5px;">${a}</div>
         <div style="font-size:11px; color:var(--mute); margin-top:4px;">${SONGS.filter(s=>s.artist.includes(a)).length} canciones en tu galaxia</div>
-      </div>`).join('')}</div>`;
+      </div>`).join('')}</div>` : emptyPanel('Todavía no hay artistas — aparecerán aquí en cuanto tengas canciones reales conectadas.');
   } else if(state.discoverTab==='scenes'){
     body = `<div class="grid g3">${COMMUNITIES.map(communityCard).join('')}</div>`;
   } else {
-    body = `<div class="grid g3">
+    body = `
+    <p style="font-size:10.5px; color:var(--mute-2); font-family:'JetBrains Mono'; margin-bottom:14px;">Vista ilustrativa — un directorio real de curadores requeriría cuentas de otras personas conectadas a un backend compartido, que este prototipo local no tiene.</p>
+    <div class="grid g3">
       ${FRIENDS.map(f=>`
         <div class="panel panel-pad" style="display:flex; gap:12px; align-items:center;">
           <div class="avatar" style="width:44px;height:44px;background:${f.color}">${f.init}</div>
@@ -2124,11 +2088,11 @@ function viewCommunityDetail(id){
       <div class="panel panel-pad">
         <div class="section-title" style="margin-bottom:14px;"><span class="dot"></span>Playlist colaborativa</div>
         <div style="display:flex; flex-direction:column; gap:10px;">
-          ${SONGS.slice(0,4).map(s=>`
-            <div style="display:flex; gap:10px; align-items:center;">
+          ${SONGS.length ? SONGS.slice(0,4).map(s=>`
+            <div style="display:flex; gap:10px; align-items:center; cursor:pointer;" onclick="togglePreview('${s.id}')">
               <div class="song-art ${s.art}" style="width:38px;height:38px;margin:0;border-radius:8px;"></div>
               <div style="flex:1; min-width:0;"><div style="font-size:12px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.title}</div><div style="font-size:10.5px; color:var(--mute);">${s.artist}</div></div>
-            </div>`).join('')}
+            </div>`).join('') : `<p style="font-size:11.5px; color:var(--mute-2);">Aún no hay canciones reales en tu galaxia para mostrar aquí.</p>`}
         </div>
       </div>
     </div>
@@ -2161,7 +2125,7 @@ function viewArchive(){
 function memoryCard(m){
   return `
   <div class="memory-card" onclick="openMemoryDrawer('${m.id}')" style="cursor:pointer;">
-    <div class="memory-photo ${m.art}"><span class="memory-date mono">${m.date}</span></div>
+    <div class="memory-photo ${m.photo?'':m.art}" style="${m.photo?`background-image:url('${m.photo}'); background-size:cover; background-position:center;`:''}"><span class="memory-date mono">${m.date}</span></div>
     <div class="memory-body">
       <div style="font-weight:600; font-size:13.5px;">${m.song}</div>
       <div style="font-size:11px; color:var(--mute);">${m.artist}</div>
@@ -2227,9 +2191,9 @@ function viewProfile(){
         <div class="section-title" style="margin-bottom:14px;"><span class="dot"></span>Identidad musical</div>
         <div class="panel panel-pad" style="margin-bottom:24px;">
           <div style="font-family:'JetBrains Mono'; font-size:10.5px; color:var(--mute); margin-bottom:10px;">ARTISTAS FAVORITOS</div>
-          <div class="tag-picker" style="margin-bottom:18px;">${USER.favArtists.map(a=>`<span class="tag-opt on">${a}</span>`).join('')}</div>
+          <div class="tag-picker" style="margin-bottom:18px;">${USER.favArtists.length ? USER.favArtists.map(a=>`<span class="tag-opt on">${a}</span>`).join('') : `<span style="font-size:11px; color:var(--mute-2); font-family:'JetBrains Mono';">Se llenará con tus artistas top reales de Spotify al conectar y escuchar.</span>`}</div>
           <div style="font-family:'JetBrains Mono'; font-size:10.5px; color:var(--mute); margin-bottom:10px;">ETAPAS DE VIDA</div>
-          <div class="tag-picker">${USER.eras.map(a=>`<span class="tag-opt on">${a}</span>`).join('')}</div>
+          <div class="tag-picker">${USER.eras.length ? USER.eras.map(a=>`<span class="tag-opt on">${a}</span>`).join('') : `<span style="font-size:11px; color:var(--mute-2); font-family:'JetBrains Mono';">Aún no definiste etapas de vida — puedes contarlas la próxima vez que pases por el onboarding.</span>`}</div>
         </div>
       </div>
       <div>
@@ -2254,11 +2218,11 @@ function viewProfile(){
         </div>
         <div class="section-title" style="margin-bottom:14px;"><span class="dot"></span>Descubrimientos compartidos</div>
         <div style="display:flex; flex-direction:column; gap:10px;">
-          ${SONGS.filter(s=>s.saved).slice(0,4).map(s=>`
-          <div class="panel panel-pad" style="display:flex; gap:12px; align-items:center;">
+          ${SONGS.filter(s=>s.saved).length ? SONGS.filter(s=>s.saved).slice(0,4).map(s=>`
+          <div class="panel panel-pad" style="display:flex; gap:12px; align-items:center; cursor:pointer;" onclick="togglePreview('${s.id}')">
             <div class="song-art ${s.art}" style="width:40px;height:40px;margin:0;border-radius:9px;"></div>
             <div style="flex:1; min-width:0;"><div style="font-weight:600; font-size:12px;">${s.title}</div><div style="font-size:10.5px; color:var(--mute);">${s.artist}</div></div>
-          </div>`).join('')}
+          </div>`).join('') : `<p style="font-size:11px; color:var(--mute-2);">Aún no has guardado canciones.</p>`}
         </div>
       </div>
     </div>
@@ -2267,6 +2231,7 @@ function viewProfile(){
 
 /* ---------- VIEW: MY GALAXY ---------- */
 function viewGalaxy(){
+  const isEmpty = !SONGS.length && !MEMORIES.length && !COMMUNITIES.some(c=>c.joined);
   const filters = [
     {id:'all', label:'Todo'},
     {id:'song', label:'Canciones'},
@@ -2281,10 +2246,14 @@ function viewGalaxy(){
       <div>
         <span class="page-eyebrow">MY GALAXY</span>
         <h1 class="page-title">El universo musical de ${USER.name.split(' ')[0]}.</h1>
-        <p class="page-sub">Nodos, conexiones, etapas y personas. Arrastra para rotar, toca un nodo para ver su historia.</p>
+        <p class="page-sub">La galaxia es tu reproductor: toca una canción para escucharla, doble click para ver su historia. Arrastra para rotar.</p>
       </div>
     </div>
     <div class="tabs">${filters.map(f=>`<button class="tab ${state.galaxyFilter===f.id?'active':''}" onclick="setGalaxyFilter('${f.id}')">${f.label}</button>`).join('')}</div>
+    ${isEmpty ? `<div class="panel panel-pad" style="text-align:center; margin-bottom:16px;">
+      <p class="page-sub" style="margin:0;">Por ahora solo estás tú. En cuanto conectes Spotify/YouTube, importes música o agregues una memoria, tu galaxia empezará a crecer con nodos reales de canciones, etapas, lugares y personas.</p>
+      <a href="#/connections" class="pill-btn" style="margin-top:12px; display:inline-flex;">${ICONS.link} Conectar mi música</a>
+    </div>` : ''}
     <div class="galaxy-wrap" id="full-galaxy-wrap" style="height:560px;">
       <canvas id="full-galaxy-canvas"></canvas>
       <div class="galaxy-legend">
@@ -2294,7 +2263,7 @@ function viewGalaxy(){
         <div><span class="legend-dot" style="background:var(--amber)"></span>Lugares</div>
         <div><span class="legend-dot" style="background:var(--magenta)"></span>Personas / comunidades</div>
       </div>
-      <div class="galaxy-hint">Arrastra para explorar · click en un nodo</div>
+      <div class="galaxy-hint">Click en una canción = reproducir · doble click = ver detalle</div>
     </div>
   </div>`;
 }
@@ -2332,7 +2301,7 @@ function chatBubble(m){
       return `<div class="chat-song-result">
         <div class="mini-art ${s.art}"></div>
         <div class="csr-meta"><b>${s.title}</b><span>${s.artist}</span></div>
-        <button class="mini-btn" onclick="togglePreview('${s.id}')" title="Escuchar micro-clip">${(state.playing && state.playing.songId===s.id)?ICONS.pause:ICONS.play}</button>
+        <button class="mini-btn" onclick="togglePreview('${s.id}')" title="Reproducir">${(state.playing && state.playing.songId===s.id)?ICONS.pause:ICONS.play}</button>
         <button class="mini-btn ${s.saved?'saved':''}" onclick="toggleSave('${s.id}')">${ICONS.save}</button>
       </div>`;
     }).join('') : ''}
@@ -2389,7 +2358,7 @@ function drawerHTML(){
     return `
     <div class="drawer-overlay" onclick="if(event.target===this) closeDrawer()">
       <div class="drawer">
-        <div class="song-art ${m.art}" style="width:100%; aspect-ratio:16/9; border-radius:0; margin:0; display:flex; align-items:flex-end; padding:18px;">
+        <div class="song-art ${m.photo?'':m.art}" style="width:100%; aspect-ratio:16/9; border-radius:0; margin:0; display:flex; align-items:flex-end; padding:18px; ${m.photo?`background-image:url('${m.photo}'); background-size:cover; background-position:center;`:''}">
           <button class="drawer-close" style="position:absolute; top:16px; right:16px; background:rgba(5,3,8,.5); border-color:rgba(255,255,255,.2);" onclick="closeDrawer()">${ICONS.close}</button>
           <span class="chip" style="background:rgba(5,3,8,.55); backdrop-filter:blur(4px);">${m.date}</span>
         </div>
@@ -2405,7 +2374,7 @@ function drawerHTML(){
             <div class="field" style="margin-bottom:0;"><label>${ICONS.users.replace(/width="18" height="18"/,'width="11" height="11"')} PERSONAS</label><div style="font-size:13px;">${m.people.join(', ')}</div></div>
           </div>
           <div class="field"><label>ETIQUETAS</label><div class="tag-picker">${m.tags.map(t=>`<span class="tag-opt on">${t}</span>`).join('')}</div></div>
-          <button class="pill-btn" style="width:100%; justify-content:center; margin-top:8px;" onclick="togglePreview('${m.songId}')">${(state.playing && state.playing.songId===m.songId)?ICONS.pause+' Detener preview':ICONS.play+' Escuchar micro-clip'}</button>
+          ${m.songId && findSong(m.songId) ? `<button class="pill-btn" style="width:100%; justify-content:center; margin-top:8px;" onclick="togglePreview('${m.songId}')">${(state.playing && state.playing.songId===m.songId)?ICONS.pause+' Detener':ICONS.play+' Reproducir'}</button>` : ''}
         </div>
       </div>
     </div>`;
@@ -2436,7 +2405,7 @@ function nodeDrawerHTML(node){
           <p style="font-size:13px; font-style:italic; line-height:1.6;">“${mem.note}”</p>
         </div>` : `<p class="page-sub" style="margin-bottom:16px;">Aún no tiene una memoria asociada.</p>`}
         <div style="display:flex; gap:10px;">
-          <button class="pill-btn" style="flex:1; justify-content:center;" onclick="togglePreview('${node.songId}')">${(state.playing && state.playing.songId===node.songId)?ICONS.pause+' Detener':ICONS.play+' Preview'}</button>
+          <button class="pill-btn" style="flex:1; justify-content:center;" onclick="togglePreview('${node.songId}')">${(state.playing && state.playing.songId===node.songId)?ICONS.pause+' Detener':ICONS.play+' Reproducir'}</button>
           <button class="pill-btn ghost" style="flex:1; justify-content:center;" onclick="closeDrawer(); openAddMemory('${node.songId}')">${ICONS.plus} Memoria</button>
         </div>
       </div>`;
@@ -2470,9 +2439,81 @@ function nodeDrawerHTML(node){
   return `<div class="drawer-overlay" onclick="if(event.target===this) closeDrawer()"><div class="drawer">${extra}</div></div>`;
 }
 
+/* ---------- FOTOS DE MEMORIAS: carga real desde tu equipo ----------
+   Sin backend, así que la foto se procesa 100% en el navegador con
+   FileReader + <canvas> (para redimensionar/comprimir y no reventar el
+   límite de tamaño de localStorage) y se guarda como data URL. No hay
+   ningún placeholder: lo que ves en la vista previa es exactamente el
+   archivo que elegiste, y queda asociado a esa memoria de verdad.
+*/
+function resizeImageFile(file, maxDim, quality){
+  return new Promise((resolve, reject)=>{
+    if(!file || !file.type || !file.type.startsWith('image/')){ reject(new Error('not-an-image')); return; }
+    const reader = new FileReader();
+    reader.onerror = ()=> reject(reader.error || new Error('read-failed'));
+    reader.onload = ()=>{
+      const img = new Image();
+      img.onerror = ()=> reject(new Error('decode-failed'));
+      img.onload = ()=>{
+        let width = img.naturalWidth, height = img.naturalHeight;
+        if(width > maxDim || height > maxDim){
+          if(width >= height){ height = Math.round(height * (maxDim/width)); width = maxDim; }
+          else { width = Math.round(width * (maxDim/height)); height = maxDim; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+async function handleMemoryPhoto(evt){
+  const file = evt.target.files && evt.target.files[0];
+  if(!file || !state.modal) return;
+  const box = document.getElementById('mm-photo-box');
+  if(box) box.innerHTML = '<div style="font-size:11px;">Cargando imagen…</div>';
+  try{
+    state.modal.photoDataUrl = await resizeImageFile(file, 900, 0.82);
+  } catch(e){
+    toast('No pudimos leer esa imagen — prueba con otro archivo');
+  }
+  renderMemoryPhotoBox();
+}
+function removeMemoryPhoto(evt){
+  if(evt) evt.stopPropagation();
+  if(!state.modal) return;
+  state.modal.photoDataUrl = null;
+  const input = document.getElementById('mm-photo-input');
+  if(input) input.value = '';
+  renderMemoryPhotoBox();
+}
+function mmPhotoBoxStyle(){
+  const url = state.modal && state.modal.photoDataUrl;
+  return url ? `cursor:pointer; position:relative; padding:0; overflow:hidden; height:150px; background-image:url('${url}'); background-size:cover; background-position:center;` : 'cursor:pointer;';
+}
+function mmPhotoBoxInner(){
+  const url = state.modal && state.modal.photoDataUrl;
+  return url ? `<button type="button" class="mini-btn" style="position:absolute; top:8px; right:8px; background:rgba(5,3,8,.6);" onclick="removeMemoryPhoto(event)" title="Quitar foto">${ICONS.close}</button>` : `${ICONS.camera}<div>Arrastra una imagen o toca para elegir</div>`;
+}
+function renderMemoryPhotoBox(){
+  const box = document.getElementById('mm-photo-box');
+  if(!box) return;
+  box.style.cssText = mmPhotoBoxStyle();
+  box.innerHTML = mmPhotoBoxInner();
+}
+function mmToggleManual(){
+  const sel = document.getElementById('mm-song');
+  const box = document.getElementById('mm-manual-fields');
+  if(!sel || !box) return;
+  box.style.display = sel.value ? 'none' : '';
+}
+
 /* ---------- ADD MEMORY MODAL ---------- */
 function openAddMemory(songId){
-  state.modal = { type:'addMemory', songId: songId || null, tagSel: [] };
+  state.modal = { type:'addMemory', songId: songId || null, tagSel: [], photoDataUrl: null };
   renderOverlays();
 }
 function closeModal(){ state.modal = null; renderOverlays(); }
@@ -2524,7 +2565,14 @@ function modalHTML(){
         <div class="modal-body">
           <div class="field">
             <label>CANCIÓN</label>
-            <select id="mm-song">${SONGS.map(s=>`<option value="${s.id}" ${state.modal.songId===s.id?'selected':''}>${s.title} — ${s.artist}</option>`).join('')}</select>
+            ${SONGS.length ? `<select id="mm-song" onchange="mmToggleManual()">
+              <option value="">— Escribir el título manualmente —</option>
+              ${SONGS.map(s=>`<option value="${s.id}" ${state.modal.songId===s.id?'selected':''}>${s.title} — ${s.artist}</option>`).join('')}
+            </select>` : `<p class="page-sub" style="margin:0;">Aún no tienes canciones reales conectadas — conecta Spotify o YouTube, o impórtalas desde Conexiones. Mientras tanto, escribe el título abajo: la memoria se guarda igual y podrás vincularla a una canción real más adelante.</p>`}
+            <div id="mm-manual-fields" class="field-row" style="margin-top:${SONGS.length?'10px':'0'}; ${(SONGS.length && state.modal.songId) ? 'display:none;' : ''}">
+              <div class="field" style="margin-bottom:0;"><input type="text" id="mm-title" placeholder="Título de la canción"/></div>
+              <div class="field" style="margin-bottom:0;"><input type="text" id="mm-artist" placeholder="Artista"/></div>
+            </div>
           </div>
           <div class="field-row">
             <div class="field"><label>FECHA</label><input type="date" id="mm-date"/></div>
@@ -2533,8 +2581,9 @@ function modalHTML(){
           <div class="field"><label>PERSONAS</label><input type="text" id="mm-people" placeholder="Ej. Laura, Santiago"/></div>
           <div class="field"><label>TU RECUERDO</label><textarea id="mm-note" placeholder="Cuenta la historia detrás de esta canción…"></textarea></div>
           <div class="field">
-            <label>FOTOGRAFÍA</label>
-            <div class="upload-box">${ICONS.camera}<div>Arrastra una imagen o toca para elegir<br/>(simulado en este prototipo)</div></div>
+            <label>FOTOGRAFÍA (OPCIONAL)</label>
+            <input type="file" id="mm-photo-input" accept="image/*" class="hidden" onchange="handleMemoryPhoto(event)"/>
+            <div class="upload-box" id="mm-photo-box" style="${mmPhotoBoxStyle()}" onclick="document.getElementById('mm-photo-input').click()">${mmPhotoBoxInner()}</div>
           </div>
           <div class="field">
             <label>ETIQUETAS</label>
@@ -2549,15 +2598,29 @@ function modalHTML(){
 }
 function submitMemory(){
   const songSel = document.getElementById('mm-song');
-  const song = findSong(songSel.value);
+  const song = songSel && songSel.value ? findSong(songSel.value) : null;
+  const manualTitle = document.getElementById('mm-title') ? document.getElementById('mm-title').value.trim() : '';
+  const manualArtist = document.getElementById('mm-artist') ? document.getElementById('mm-artist').value.trim() : '';
+  if(!song && !manualTitle){
+    toast('Elige una canción o escribe al menos el título');
+    return;
+  }
   const dateVal = document.getElementById('mm-date').value;
   const place = document.getElementById('mm-place').value || 'Sin ubicación';
   const people = document.getElementById('mm-people').value.split(',').map(s=>s.trim()).filter(Boolean);
   const note = document.getElementById('mm-note').value || 'Un momento que se quedó pegado a esta canción.';
   const tags = [...document.querySelectorAll('#mm-tags .tag-opt.on')].map(b=>b.dataset.tag);
   const dateLabel = dateVal ? new Date(dateVal+'T12:00:00').toLocaleDateString('es-CO',{day:'numeric',month:'short',year:'numeric'}) : 'Sin fecha';
-  song.saved = true;
-  const newMem = { id:'m'+(MEMORIES.length+1)+'-'+Date.now(), songId:song.id, song:song.title, artist:song.artist, art:song.art, date:dateLabel, note, place, people: people.length?people:['Yo'], tags: tags.length?tags:['Nueva memoria'] };
+  if(song) song.saved = true;
+  const newMem = {
+    id:'m'+(MEMORIES.length+1)+'-'+Date.now(),
+    songId: song ? song.id : null,
+    song: song ? song.title : manualTitle,
+    artist: song ? song.artist : (manualArtist || 'Sin vincular todavía'),
+    art: song ? song.art : 'art-5',
+    date:dateLabel, note, place, people: people.length?people:['Yo'], tags: tags.length?tags:['Nueva memoria'],
+    photo: state.modal.photoDataUrl || null
+  };
   MEMORIES.unshift(newMem);
   persist();
   closeModal();
@@ -2818,18 +2881,25 @@ function finishOnboarding(){
     const firstName = USER.name.split(' ')[0];
     state.chat = [{ role:'ai', text:`¡Hola ${firstName}! Soy tu bibliotecario musical. No reemplazo tu criterio — lo ayudo a conectar. Pregúntame por una época, un ánimo o una persona.`, songs: [] }];
 
+    // Artistas y épocas elegidos en el onboarding sí describen gustos reales
+    // del usuario, así que se aplican de verdad a su perfil (antes se pedían
+    // y nunca se guardaban en ningún lado — quedaban en una pantalla que no
+    // dejaba huella).
+    if(state.ob.artists && state.ob.artists.length) USER.favArtists = [...state.ob.artists];
+    if(state.ob.eras && state.ob.eras.length) USER.eras = [...state.ob.eras];
+
+    // El "recuerdo musical" del onboarding se guarda como texto real que
+    // escribiste — pero en este punto del flujo Spotify aún no está
+    // conectado, así que no inventamos una canción "real" con portada de
+    // álbum falsa. Se guarda sin songId (sin reproducción) hasta que la
+    // vincules a una canción real de verdad, por búsqueda o import.
     const raw = (state.ob.memorySong||'').trim();
     if(raw){
-      let title = raw, artist = 'Artista desconocido';
+      let title = raw, artist = '';
       if(raw.includes('—')){ const parts = raw.split('—'); title = parts[0].trim(); artist = parts.slice(1).join('—').trim(); }
       else if(raw.includes(' - ')){ const parts = raw.split(' - '); title = parts[0].trim(); artist = parts.slice(1).join(' - ').trim(); }
-      let song = SONGS.find(s=> s.title.toLowerCase()===title.toLowerCase());
-      if(!song){
-        song = { id:'ob-'+Date.now(), title, artist, art:'art-5', saved:true, tag:'Tu primer recuerdo' };
-        SONGS.unshift(song);
-      } else { song.saved = true; }
       MEMORIES.unshift({
-        id:'ob-mem-'+Date.now(), songId:song.id, song:song.title, artist:song.artist, art:song.art,
+        id:'ob-mem-'+Date.now(), songId:null, song:title, artist: artist || 'Sin vincular todavía', art:'art-5',
         date:'Onboarding · 2026', note: state.ob.memoryNote || 'La primera canción que conectaste a tu galaxia.',
         place: USER.city.split(',')[0], people:['Yo'], tags: state.ob.eras.length ? [state.ob.eras[0].split(' ')[0]] : ['Primer recuerdo']
       });
@@ -2897,17 +2967,116 @@ function bindGlobalUI(){
   if(btn) btn.onclick = ()=>openAddMemory();
   const search = document.getElementById('global-search');
   if(search){
-    search.onkeydown = (e)=>{
-      if(e.key==='Enter' && search.value.trim()){
-        const q = search.value.trim();
-        state.discoverTab = 'songs';
-        state.route = 'discover';
-        location.hash = '#/discover';
-        toast(`Explorando “${q}” en Discover`);
-        render();
-      }
-    };
+    search.value = state.search.query || '';
+    search.oninput = (e)=> onGlobalSearchInput(e.target.value);
+    search.onkeydown = (e)=>{ if(e.key==='Escape') clearSearch(); };
+    search.onfocus = ()=>{ if(state.search.query) renderSearchPanel(); };
   }
+  renderSearchPanel();
+}
+// Un solo listener global (no uno por render) que cierra el panel de
+// resultados al hacer clic fuera de la caja de búsqueda.
+document.addEventListener('click', (e)=>{
+  const wrap = document.querySelector('.search-box-wrap');
+  if(wrap && !wrap.contains(e.target)) closeSearchPanel();
+});
+
+/* ---------- BUSCADOR REAL (Spotify Search API) ----------
+   Único buscador de la app: busca música real en Spotify (cuando está
+   conectado) y sus resultados alimentan la galaxia de verdad — se pueden
+   agregar y reproducir, no son solo texto.
+*/
+let searchDebounceTimer = null;
+function onGlobalSearchInput(val){
+  const q = (val||'').trim();
+  state.search.query = q;
+  if(searchDebounceTimer) clearTimeout(searchDebounceTimer);
+  if(!q){ state.search.results = []; state.search.error = null; state.search.loading = false; renderSearchPanel(); return; }
+  state.search.loading = true;
+  renderSearchPanel();
+  searchDebounceTimer = setTimeout(()=> runGlobalSearch(q), 350);
+}
+async function runGlobalSearch(q){
+  if(!q){ return; }
+  if(!CONNECTIONS.spotify.connected){
+    state.search.loading = false;
+    state.search.error = 'not-connected';
+    state.search.results = [];
+    renderSearchPanel();
+    return;
+  }
+  state.search.loading = true;
+  state.search.error = null;
+  renderSearchPanel();
+  try{
+    const data = await spFetch('/search', { q, type:'track', limit:10 });
+    const tracks = (data.tracks && data.tracks.items) || [];
+    state.search.results = tracks.filter(Boolean).map(t=>({
+      id:'sp-'+t.id, title:t.name, artist:(t.artists||[]).map(a=>a.name).join(', '), raw:t
+    }));
+  }catch(e){
+    console.error('Spotify search failed', e);
+    state.search.error = 'error';
+    state.search.results = [];
+  }
+  state.search.loading = false;
+  renderSearchPanel();
+}
+function closeSearchPanel(){
+  const root = document.getElementById('search-panel-root');
+  if(root) root.innerHTML = '';
+}
+function renderSearchPanel(){
+  const root = document.getElementById('search-panel-root');
+  if(!root) return;
+  const s = state.search;
+  if(!s.query){ root.innerHTML=''; return; }
+  let inner = '';
+  if(s.error==='not-connected'){
+    inner = `<div class="search-panel-msg">Conecta Spotify para buscar música real. <a href="#/connections" onclick="closeSearchPanel()">Ir a Conexiones</a></div>`;
+  } else if(s.loading){
+    inner = `<div class="search-panel-msg">Buscando “${s.query}” en Spotify…</div>`;
+  } else if(s.error==='error'){
+    inner = `<div class="search-panel-msg">No pudimos buscar en Spotify ahora mismo. Intenta de nuevo.</div>`;
+  } else if(!s.results.length){
+    inner = `<div class="search-panel-msg">Sin resultados reales para “${s.query}”.</div>`;
+  } else {
+    inner = s.results.map(r=>{
+      const inGalaxy = SONGS.some(x=>x.id===r.id && x.saved);
+      return `
+      <div class="search-result-row">
+        <div style="flex:1; min-width:0;"><b>${r.title}</b><div style="font-size:11px; color:var(--mute);">${r.artist}</div></div>
+        <button class="mini-btn" onclick="playSearchResult('${r.id}')" title="Reproducir">${ICONS.play}</button>
+        <button class="mini-btn ${inGalaxy?'saved':''}" onclick="addSearchResultToGalaxy('${r.id}')" title="${inGalaxy?'Ya está en tu galaxia':'Agregar a tu galaxia'}">${inGalaxy?ICONS.save:ICONS.plus}</button>
+      </div>`;
+    }).join('');
+  }
+  root.innerHTML = `<div class="search-panel">${inner}</div>`;
+}
+function addSearchResultToGalaxy(id){
+  const r = state.search.results.find(x=>x.id===id);
+  if(!r) return;
+  const song = songFromSpotifySearchTrack(r.raw);
+  if(!song) return;
+  song.saved = true;
+  persist();
+  toast(`Agregaste “${song.title}” a tu galaxia`);
+  renderSearchPanel();
+  renderView();
+}
+function playSearchResult(id){
+  const r = state.search.results.find(x=>x.id===id);
+  if(!r) return;
+  const song = songFromSpotifySearchTrack(r.raw);
+  if(!song) return;
+  persist();
+  playPreview(song);
+}
+function clearSearch(){
+  state.search = { query:'', results:[], loading:false, error:null };
+  const input = document.getElementById('global-search');
+  if(input) input.value = '';
+  closeSearchPanel();
 }
 
 async function boot(){

@@ -804,22 +804,86 @@ function buildProfile(song){
 
 function stopPreview(){
   if(!current) return;
-  const { nodes, tickHandle, timeoutId } = current;
-  nodes.forEach(n=>{
-    try{ n.stop && n.stop(); }catch(e){}
-    try{ n.disconnect && n.disconnect(); }catch(e){}
-  });
-  if(tickHandle) cancelAnimationFrame(tickHandle);
-  if(timeoutId) clearTimeout(timeoutId);
+  if(current.kind==='spotify'){ spotifyPausePlayback(); }
+  else if(current.kind==='youtube'){ youtubePausePlayback(); }
+  else {
+    const { nodes, tickHandle, timeoutId } = current;
+    (nodes||[]).forEach(n=>{
+      try{ n.stop && n.stop(); }catch(e){}
+      try{ n.disconnect && n.disconnect(); }catch(e){}
+    });
+    if(tickHandle) cancelAnimationFrame(tickHandle);
+    if(timeoutId) clearTimeout(timeoutId);
+  }
+  stopMediaTicker();
   current = null;
   if(typeof onPreviewChange === 'function') onPreviewChange(null);
 }
 
-function playPreview(song){
+/* ---------- REPRODUCCIÓN: despachador único =====
+   Decide entre audio real (Spotify Web Playback SDK / YouTube IFrame Player)
+   y el clip sintético generativo, según de dónde venga la canción y si hay
+   una conexión real activa. Si el audio real falla (p.ej. sin Premium), cae
+   al clip generativo mostrando siempre un aviso claro de cuál está sonando.
+*/
+async function playPreview(song){
   if(!song) return;
-  const ctx = ensureCtx();
   if(current && current.songId === song.id){ stopPreview(); return; }
   stopPreview();
+
+  if(song.source==='spotify' && CONNECTIONS.spotify.connected){
+    const trackId = song.id.replace(/^sp-/, '');
+    current = { songId: song.id, kind:'spotify' };
+    if(typeof onPreviewChange === 'function') onPreviewChange({ songId:song.id, song, duration:null, real:true, platformLabel:'Spotify' });
+    const ok = await spotifyPlayTrack(trackId);
+    if(!ok){ current = null; playSynthPreview(song); return; }
+    startMediaTicker(async ()=>{
+      if(!spPlayer) return null;
+      const st = await spPlayer.getCurrentState();
+      if(!st || !st.duration) return null;
+      if(st.paused && st.position===0) return null;
+      return st.position / st.duration;
+    });
+    return;
+  }
+  if(song.source==='youtube' && CONNECTIONS.youtube.connected){
+    const videoId = song.id.replace(/^yt-/, '');
+    current = { songId: song.id, kind:'youtube' };
+    if(typeof onPreviewChange === 'function') onPreviewChange({ songId:song.id, song, duration:null, real:true, platformLabel:'YouTube' });
+    try{
+      await youtubePlayVideo(videoId);
+      startMediaTicker(()=>{
+        if(!ytPlayer || typeof ytPlayer.getDuration!=='function') return null;
+        const dur = ytPlayer.getDuration();
+        if(!dur) return null;
+        return ytPlayer.getCurrentTime() / dur;
+      });
+    }catch(e){
+      console.error(e);
+      toast('No se pudo reproducir ese video de YouTube');
+      current = null; playSynthPreview(song);
+    }
+    return;
+  }
+  playSynthPreview(song);
+}
+
+let mediaTicker = null;
+function startMediaTicker(getProgress){
+  stopMediaTicker();
+  mediaTicker = setInterval(async ()=>{
+    if(!current){ stopMediaTicker(); return; }
+    const p = await getProgress();
+    if(p==null) return;
+    if(typeof onPreviewProgress === 'function') onPreviewProgress(Math.max(0, Math.min(1, p)));
+    if(p >= 0.995) stopPreview();
+  }, 400);
+}
+function stopMediaTicker(){ if(mediaTicker){ clearInterval(mediaTicker); mediaTicker=null; } }
+
+function playSynthPreview(song){
+  if(!song) return;
+  const ctx = ensureCtx();
 
   const profile = buildProfile(song);
   const now = ctx.currentTime + 0.04;
@@ -861,8 +925,8 @@ function playPreview(song){
   masterGain.gain.setValueAtTime(0.22, now + totalDur - 0.35);
   masterGain.gain.linearRampToValueAtTime(0, now + totalDur - 0.02);
 
-  current = { songId: song.id, ctx, nodes, startTime: now, duration: totalDur, tickHandle:null, timeoutId:null };
-  if(typeof onPreviewChange === 'function') onPreviewChange({ songId: song.id, song, duration: totalDur });
+  current = { songId: song.id, kind:'synth', ctx, nodes, startTime: now, duration: totalDur, tickHandle:null, timeoutId:null };
+  if(typeof onPreviewChange === 'function') onPreviewChange({ songId: song.id, song, duration: totalDur, real:false });
 
   function tick(){
     if(!current || current.songId !== song.id) return;
@@ -1191,7 +1255,7 @@ async function spotifyConnect(){
   const stateParam = pkceRandomString(24);
   localStorage.setItem('aresGalaxy.sp.verifier', verifier);
   localStorage.setItem('aresGalaxy.sp.state', stateParam);
-  const scope = ['user-read-email','user-read-private','user-top-read','user-read-recently-played','user-library-read','playlist-read-private','user-follow-read'].join(' ');
+  const scope = ['user-read-email','user-read-private','user-top-read','user-read-recently-played','user-library-read','playlist-read-private','user-follow-read','streaming'].join(' ');
   const params = new URLSearchParams({ client_id:cfg.clientId, response_type:'code', redirect_uri:cfg.redirectUri, code_challenge_method:'S256', code_challenge:challenge, state:stateParam, scope });
   window.location.href = 'https://accounts.spotify.com/authorize?' + params.toString();
 }
@@ -1299,9 +1363,134 @@ function spotifyDisconnect(){
   localStorage.removeItem('aresGalaxy.sp.tokens');
   CONNECTIONS.spotify.connected = false;
   CONNECTIONS.spotify.profile = null;
+  if(spPlayer){ try{ spPlayer.disconnect(); }catch(e){} spPlayer=null; spDeviceId=null; }
   persist();
   toast('Desconectaste tu cuenta de Spotify');
   renderView();
+}
+
+/* ===== ARES GALAXY — REPRODUCCIÓN REAL: SPOTIFY WEB PLAYBACK SDK =====
+   Reproduce la canción COMPLETA real (no un clip) directamente en esta
+   pestaña, convirtiéndola en un dispositivo de Spotify Connect. Es la única
+   forma oficial y legítima de reproducir audio íntegro de Spotify en una
+   app web (Spotify ya no expone clips de 30s por la Web API desde nov. 2024).
+   Requisito no negociable de Spotify: la cuenta debe ser Premium — con
+   cuenta gratuita el SDK simplemente no reproduce nada.
+*/
+let spPlayer = null;
+let spDeviceId = null;
+let spPlayerReadyPromise = null;
+function loadSpotifySdk(){
+  return new Promise((resolve, reject)=>{
+    if(window.Spotify && window.Spotify.Player){ resolve(); return; }
+    const prevReady = window.onSpotifyWebPlaybackSDKReady;
+    window.onSpotifyWebPlaybackSDKReady = ()=>{ if(prevReady) prevReady(); resolve(); };
+    const s = document.createElement('script');
+    s.src = 'https://sdk.scdn.co/spotify-player.js';
+    s.onerror = ()=>reject(new Error('No se pudo cargar el SDK de reproducción de Spotify'));
+    document.head.appendChild(s);
+  });
+}
+async function ensureSpotifyPlayer(){
+  if(spDeviceId) return spDeviceId;
+  if(spPlayerReadyPromise) return spPlayerReadyPromise;
+  spPlayerReadyPromise = (async ()=>{
+    await loadSpotifySdk();
+    spPlayer = new Spotify.Player({
+      name: 'Ares Galaxy',
+      getOAuthToken: async (cb)=>{ const t = await spEnsureToken(); cb(t || ''); },
+      volume: 0.85,
+    });
+    spPlayer.addListener('ready', ({device_id})=>{ spDeviceId = device_id; });
+    spPlayer.addListener('not_ready', ()=>{ spDeviceId = null; });
+    spPlayer.addListener('initialization_error', ({message})=>{ toast('Spotify Player: '+message); });
+    spPlayer.addListener('authentication_error', ()=>{ toast('Spotify necesita que vuelvas a conectar tu cuenta'); });
+    spPlayer.addListener('account_error', ()=>{ toast('Reproducir audio completo de Spotify requiere una cuenta Premium'); });
+    await spPlayer.connect();
+    const start = Date.now();
+    while(!spDeviceId && Date.now()-start < 8000){ await new Promise(r=>setTimeout(r,150)); }
+    return spDeviceId;
+  })();
+  const id = await spPlayerReadyPromise;
+  spPlayerReadyPromise = null;
+  return id;
+}
+async function spotifyPlayTrack(trackId){
+  try{
+    const deviceId = await ensureSpotifyPlayer();
+    if(!deviceId){ toast('No se pudo iniciar el reproductor de Spotify (revisa que tu cuenta sea Premium)'); return false; }
+    const token = await spEnsureToken();
+    const res = await fetch('https://api.spotify.com/v1/me/player/play?device_id='+deviceId, {
+      method:'PUT', headers:{ Authorization:'Bearer '+token, 'Content-Type':'application/json' },
+      body: JSON.stringify({ uris:['spotify:track:'+trackId] })
+    });
+    if(res.status===403){ toast('Reproducir audio completo requiere Spotify Premium — sonando el clip generativo en su lugar'); return false; }
+    if(res.status===404){ toast('El dispositivo de reproducción no está listo, intenta de nuevo'); return false; }
+    if(!res.ok && res.status!==204){ toast('Spotify no pudo iniciar la reproducción (error '+res.status+')'); return false; }
+    return true;
+  }catch(e){ console.error(e); toast('No se pudo reproducir el audio real de Spotify'); return false; }
+}
+function spotifyPausePlayback(){
+  if(spPlayer){ try{ spPlayer.pause(); }catch(e){} }
+}
+
+/* ===== ARES GALAXY — REPRODUCCIÓN REAL: YOUTUBE IFRAME PLAYER =====
+   Reproductor oficial y gratuito de YouTube (no requiere cuenta Premium ni
+   ningún pago) para las canciones que vienen de tu "Me gusta" de YouTube.
+*/
+let ytPlayer = null;
+let ytPlayerReady = false;
+function loadYoutubeIframeApi(){
+  return new Promise((resolve)=>{
+    if(window.YT && window.YT.Player){ resolve(); return; }
+    const prevReady = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = ()=>{ if(prevReady) prevReady(); resolve(); };
+    const s = document.createElement('script');
+    s.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(s);
+  });
+}
+function ytMountEl(){
+  let el = document.getElementById('yt-player-mount');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'yt-player-mount';
+    el.style.cssText = 'position:fixed; right:16px; bottom:96px; width:160px; height:90px; z-index:85; border-radius:14px; overflow:hidden; box-shadow:var(--shadow-pop); border:1px solid var(--line-soft); display:none;';
+    document.body.appendChild(el);
+  }
+  return el;
+}
+async function ensureYoutubePlayer(){
+  if(ytPlayer && ytPlayerReady) return ytPlayer;
+  await loadYoutubeIframeApi();
+  ytMountEl();
+  return new Promise((resolve)=>{
+    ytPlayer = new YT.Player('yt-player-mount', {
+      height:'90', width:'160',
+      playerVars:{ autoplay:1, controls:1 },
+      events:{
+        onReady: ()=>{ ytPlayerReady = true; resolve(ytPlayer); },
+        onStateChange: (e)=>{ if(window.YT && e.data===YT.PlayerState.ENDED) stopPreview(); },
+        onError: ()=>{
+          const failedSong = current && current.kind==='youtube' ? findSong(current.songId) : null;
+          toast('Ese video de YouTube no se puede reproducir aquí (restringido o eliminado)' + (failedSong ? ' — sonando el clip generativo' : ''));
+          const el = document.getElementById('yt-player-mount'); if(el) el.style.display='none';
+          current = null;
+          if(failedSong) playSynthPreview(failedSong); else if(typeof onPreviewChange==='function') onPreviewChange(null);
+        },
+      }
+    });
+  });
+}
+async function youtubePlayVideo(videoId){
+  const player = await ensureYoutubePlayer();
+  ytMountEl().style.display = 'block';
+  player.loadVideoById(videoId);
+}
+function youtubePausePlayback(){
+  if(ytPlayer && ytPlayerReady){ try{ ytPlayer.pauseVideo(); }catch(e){} }
+  const el = document.getElementById('yt-player-mount');
+  if(el) el.style.display = 'none';
 }
 
 /* ===== ARES GALAXY — INTEGRACIÓN REAL: YOUTUBE (Google Identity Services) =====
@@ -1546,7 +1735,7 @@ function renderMiniPlayer(){
       <button class="mini-player-stop" onclick="togglePreview('${song.id}')" title="Detener">${ICONS.pause}</button>
     </div>
     <div class="mini-player-progress"><div class="mini-player-progress-fill" id="mp-progress-fill"></div></div>
-    <div class="mini-player-note">MICRO-CLIP GENERATIVO · NO ES EL AUDIO ORIGINAL</div>
+    <div class="mini-player-note">${state.playing.real ? `AUDIO REAL VÍA ${state.playing.platformLabel.toUpperCase()}` : 'MICRO-CLIP GENERATIVO · NO ES EL AUDIO ORIGINAL'}</div>
   </div>`;
 }
 

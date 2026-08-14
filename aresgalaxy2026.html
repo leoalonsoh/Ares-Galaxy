@@ -222,6 +222,8 @@ main{flex:1; padding:26px 30px 90px;}
 }
 .song-card:hover .play-ring{opacity:1; transform:scale(1);}
 .song-art .play-ring svg{width:13px; height:13px; fill:#fff;}
+.play-ring.is-unplayable{background:rgba(5,3,8,.4); border-style:dashed; border-color:rgba(255,255,255,.22);}
+.play-ring.is-unplayable svg{fill:none; stroke:rgba(255,255,255,.7); opacity:.75;}
 .song-art-artist-btn{
   position:absolute; top:8px; right:8px; width:26px; height:26px; border-radius:50%;
   background:rgba(5,3,8,.55); backdrop-filter:blur(4px); border:1px solid rgba(255,255,255,.25);
@@ -466,6 +468,11 @@ main{flex:1; padding:26px 30px 90px;}
 .icon-btn[disabled]{opacity:.3; pointer-events:none;}
 .mp-queue-badge{position:absolute; top:-4px; right:-4px; background:var(--magenta); color:#fff; font-size:9px; font-family:'JetBrains Mono'; border-radius:20px; padding:1px 4.5px; line-height:1.3;}
 #queue-panel-root .icon-btn, .mini-player .icon-btn{position:relative;}
+.mp-memory-btn{color:var(--magenta);}
+.mp-memory-btn:hover{background:rgba(255,61,190,.14);}
+.volume-bar{background:var(--line-soft);}
+.volume-fill{background:linear-gradient(90deg,var(--violet),var(--magenta));}
+@media (max-width: 760px){ .mini-player-controls .icon-btn:first-child{display:none;} }
 
 /* Panel de cola */
 .queue-overlay{position:fixed; inset:0; z-index:90; background:rgba(5,3,8,.5); backdrop-filter:blur(3px); display:flex; align-items:flex-end; justify-content:center;}
@@ -639,6 +646,11 @@ const ICONS = {
   drag:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="18" r="1.4"/></svg>',
   artist:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1-4.2 3.6-6.3 7-6.3s6 2.1 7 6.3"/></svg>',
   disc:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/></svg>',
+  volume:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 9.5v5h3.5L12 18V6L7.5 9.5Z"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M18.5 6.5a8 8 0 0 1 0 11"/></svg>',
+  volumeMute:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 9.5v5h3.5L12 18V6L7.5 9.5Z"/><path d="m16 10 4.5 4M20.5 10 16 14"/></svg>',
+  shuffle:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h3.5c2 0 3.2 1 4.5 2.8M3 18h3.5c2 0 3.2-1 4.5-2.8"/><path d="M14 6h3.5c2 0 3 .8 3.5 1.6M14 18h3.5c2 0 3-.8 3.5-1.6"/><path d="m18 3.5 3 2.5-3 2.5M18 15.5l3 2.5-3 2.5"/></svg>',
+  logout:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>',
+  info:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5"/><circle cx="12" cy="8" r="1" fill="currentColor" stroke="none"/></svg>',
 };
 
 // Marca / logo — triángulo geométrico con degradado violeta→magenta→azul
@@ -665,6 +677,14 @@ const USER = {
   favArtists:['Radiohead','Bad Bunny','Daft Punk','Rosalía','Tame Impala','Feid','Arctic Monkeys'],
   eras:['Colegio 2010–2013','Universidad 2013–2018','Primer trabajo 2018–2020','Ahora 2024–2026'],
 };
+// Copia congelada del perfil demo tal como arranca la app — se usa para
+// devolver USER a un estado limpio cuando se cierra sesión o se cambia de
+// cuenta, sin dejar campos de la cuenta anterior pegados en el nuevo perfil.
+const DEFAULT_USER = JSON.parse(JSON.stringify(USER));
+function resetUserToDefault(){
+  Object.keys(USER).forEach(k=> delete USER[k]);
+  Object.assign(USER, JSON.parse(JSON.stringify(DEFAULT_USER)));
+}
 
 const FRIENDS = [
   {name:'Laura Cediel', init:'LC', color:'linear-gradient(135deg,#FF3DBE,#7B5CFA)'},
@@ -692,6 +712,9 @@ const COMMUNITIES = [
   {id:'c5', name:'Rock que descubriste en colegio', members:2210, desc:'Esa banda que te prestó un amigo en un CD quemado y cambió todo.', cover:'art-5', joined:false},
   {id:'c6', name:'Electrónica de madrugada', members:980, desc:'Para las 3am reales. Ambient, techno lento y sets que no piden nada a cambio.', cover:'art-8', joined:false},
 ];
+// Estado "joined" tal como arranca la app — para poder devolver las
+// comunidades a su estado por defecto al cerrar sesión / cambiar de cuenta.
+const DEFAULT_COMMUNITIES_JOINED = COMMUNITIES.map(c=>({id:c.id, joined:c.joined}));
 
 const COMMUNITY_FEED = {
   c1:[
@@ -715,6 +738,7 @@ const EVENTS = [
   {id:'e3', day:'02', month:'AGO', name:'Drop cultural: Vinilos perdidos de los 2000s', place:'Medellín, El Poblado', going:false},
   {id:'e4', day:'14', month:'AGO', name:'Ares House Medellín — Escena electrónica colombiana', place:'Medellín', going:false},
 ];
+const DEFAULT_EVENTS_GOING = EVENTS.map(e=>({id:e.id, going:e.going}));
 
 /* ===== ARES GALAXY — CONNECTED PLATFORMS =====
    Ares Galaxy no mantiene una biblioteca musical propia: se conecta a las
@@ -754,17 +778,66 @@ const CONNECTIONS = {
 // no una lista cerrada). Es el punto de partida de una futura galaxia social.
 let PENDING_FRIENDS = [];
 
-/* ===== ARES GALAXY — PERSISTENCIA LOCAL =====
-   Todo vive en localStorage del navegador. No hay backend ni cuentas reales:
-   "iniciar sesión" en este prototipo significa (a) autenticarte de verdad con
-   una plataforma musical vía OAuth, o (b) retomar la galaxia que ya construiste
-   en este navegador. Esto es necesario además porque el flujo OAuth recarga
-   la página al volver, y sin persistencia se perdería todo lo construido.
+/* ===== ARES GALAXY — PERSISTENCIA LOCAL, POR CUENTA =====
+   Todo vive en localStorage del navegador. No hay backend ni cuentas reales
+   en el sentido de un servidor propio: "iniciar sesión" aquí significa (a)
+   autenticarte de verdad con una plataforma musical vía OAuth, o (b) retomar
+   la galaxia que ya construiste en este navegador sin conectar nada.
+
+   Cada identidad real (tu cuenta de Spotify, tu canal de YouTube, o tu
+   galaxia local sin plataforma) tiene su PROPIO cajón de almacenamiento,
+   completamente aislado de las demás:
+     aresGalaxy.account.spotify:<id de Spotify>
+     aresGalaxy.account.youtube:<id de canal>
+     aresGalaxy.account.local
+   Un puntero separado (aresGalaxy.activeAccount) recuerda cuál de esos
+   cajones es la "sesión" activa en este navegador ahora mismo. Cerrar sesión
+   borra ese puntero (y los tokens de las plataformas conectadas) pero NUNCA
+   borra el cajón de la cuenta — así, si vuelves a entrar con la misma
+   cuenta, tu galaxia sigue ahí exactamente como la dejaste. Si entras con
+   una cuenta distinta, arrancas de un cajón vacío: cero mezcla de datos
+   entre cuentas.
 */
-const LS_KEY = 'aresGalaxy.state.v1';
+const ACCOUNT_KEY_PREFIX = 'aresGalaxy.account.';
+const ACTIVE_PTR_KEY = 'aresGalaxy.activeAccount';
+const LEGACY_LS_KEY = 'aresGalaxy.state.v1'; // clave de la versión anterior (una sola cuenta global)
+let ACTIVE_ACCOUNT = null;
+function accountKey(id){ return ACCOUNT_KEY_PREFIX + id; }
+
+// Vuelve TODO el estado en memoria (perfil, canciones, memorias, conexiones,
+// cola, reproductor, chat de IA, filtros…) a un punto cero. Se usa antes de
+// cargar una cuenta distinta y al cerrar sesión, para garantizar que nada de
+// la sesión anterior sobreviva "por accidente" en la siguiente.
+function resetAppStateForNewAccount(){
+  resetUserToDefault();
+  SONGS.length = 0;
+  MEMORIES.length = 0;
+  COMMUNITIES.forEach(c=>{ const d = DEFAULT_COMMUNITIES_JOINED.find(x=>x.id===c.id); c.joined = d ? d.joined : false; });
+  EVENTS.forEach(e=>{ const d = DEFAULT_EVENTS_GOING.find(x=>x.id===e.id); e.going = d ? d.going : false; });
+  Object.keys(CONNECTIONS).forEach(k=>{ CONNECTIONS[k].connected=false; CONNECTIONS[k].profile=null; CONNECTIONS[k].lastSync=null; CONNECTIONS[k].counts={}; });
+  PENDING_FRIENDS = [];
+  state.onboarded = false;
+  state.route = 'home';
+  state.chat = [{ role:'ai', text: AI_INTRO, songs: [] }];
+  state.chatBusy = false;
+  state.discoverTab = 'songs';
+  state.galaxyFilter = 'all';
+  state.playing = null;
+  state.search = { query:'', results:[], loading:false, error:null };
+  state.queue = [];
+  state.queueIndex = -1;
+  state.queueOpen = false;
+  state.playerExpanded = false;
+  state.shuffle = false;
+  state.discover = { loading:false, error:null, items:[], loadedFor:null };
+  state.galaxyFocus = null;
+  state.drawer = null;
+  state.modal = null;
+}
 function persist(){
+  if(!ACTIVE_ACCOUNT) ACTIVE_ACCOUNT = 'local';
   try{
-    localStorage.setItem(LS_KEY, JSON.stringify({
+    localStorage.setItem(accountKey(ACTIVE_ACCOUNT), JSON.stringify({
       USER, SONGS, MEMORIES,
       communitiesJoined: COMMUNITIES.map(c=>({id:c.id, joined:c.joined})),
       eventsGoing: EVENTS.map(e=>({id:e.id, going:e.going})),
@@ -773,23 +846,82 @@ function persist(){
       pendingFriends: PENDING_FRIENDS,
       savedAt: Date.now(),
     }));
+    localStorage.setItem(ACTIVE_PTR_KEY, ACTIVE_ACCOUNT);
   }catch(e){ console.warn('No se pudo guardar el estado local de Ares Galaxy', e); }
 }
-function restore(){
+// Carga el cajón de una cuenta específica. SIEMPRE resetea el estado en
+// memoria primero, así que nunca hereda nada de la cuenta que estaba activa
+// antes — si el cajón de esa cuenta no existe todavía (primera vez que esa
+// cuenta entra en este navegador), simplemente queda vacío/por defecto.
+function restoreAccount(id){
+  resetAppStateForNewAccount();
+  ACTIVE_ACCOUNT = id;
   try{
-    const raw = localStorage.getItem(LS_KEY);
+    const raw = localStorage.getItem(accountKey(id));
     if(!raw) return false;
     const data = JSON.parse(raw);
     if(data.USER) Object.assign(USER, data.USER);
-    if(Array.isArray(data.SONGS)){ SONGS.length = 0; data.SONGS.forEach(s=>SONGS.push(s)); }
-    if(Array.isArray(data.MEMORIES)){ MEMORIES.length = 0; data.MEMORIES.forEach(m=>MEMORIES.push(m)); }
+    if(Array.isArray(data.SONGS)) data.SONGS.forEach(s=>SONGS.push(s));
+    if(Array.isArray(data.MEMORIES)) data.MEMORIES.forEach(m=>MEMORIES.push(m));
     if(Array.isArray(data.communitiesJoined)) data.communitiesJoined.forEach(c=>{ const m = COMMUNITIES.find(x=>x.id===c.id); if(m) m.joined = c.joined; });
     if(Array.isArray(data.eventsGoing)) data.eventsGoing.forEach(e=>{ const m = EVENTS.find(x=>x.id===e.id); if(m) m.going = e.going; });
     if(data.connections) Object.keys(CONNECTIONS).forEach(k=>{ if(data.connections[k]) Object.assign(CONNECTIONS[k], data.connections[k]); });
     if(Array.isArray(data.pendingFriends)) PENDING_FRIENDS = data.pendingFriends;
     state.onboarded = !!data.onboarded;
     return true;
-  }catch(e){ console.warn('No se pudo restaurar el estado local de Ares Galaxy', e); return false; }
+  }catch(e){ console.warn('No se pudo restaurar la cuenta '+id+' de Ares Galaxy', e); return false; }
+}
+// Cambia la sesión activa a una identidad real distinta (p.ej. al terminar
+// un login OAuth "en frío"). Si esa cuenta ya tenía una galaxia guardada en
+// este navegador, la recupera tal cual; si es la primera vez, arranca vacía.
+function switchAccount(id){ restoreAccount(id); localStorage.setItem(ACTIVE_PTR_KEY, id); }
+// Migración de una sola vez desde la versión anterior (una sola cuenta
+// global sin aislamiento). Si existe el dato viejo y todavía no hay ninguna
+// cuenta activa registrada, lo adoptamos como la cuenta "local" para no
+// perder galaxias ya construidas con la versión previa de la app.
+function migrateLegacyStorage(){
+  try{
+    if(localStorage.getItem(ACTIVE_PTR_KEY)) return;
+    const raw = localStorage.getItem(LEGACY_LS_KEY);
+    if(!raw) return;
+    if(!localStorage.getItem(accountKey('local'))) localStorage.setItem(accountKey('local'), raw);
+    localStorage.setItem(ACTIVE_PTR_KEY, 'local');
+  }catch(e){ console.warn('No se pudo migrar el almacenamiento anterior de Ares Galaxy', e); }
+}
+/* ===== ARES GALAXY — CERRAR SESIÓN =====
+   Cerrar sesión no es "ocultar la pantalla": olvida de verdad los tokens de
+   las plataformas conectadas (no podemos revocarlos en los servidores de
+   Spotify/Google sin un backend propio, pero Ares Galaxy dentro de este
+   navegador deja de usarlos y de recordarlos por completo), borra el
+   puntero de "cuenta activa" y vacía TODO el estado en memoria. El cajón de
+   datos de la cuenta NO se borra — así, entrar de nuevo con esa misma
+   cuenta recupera la galaxia; entrar con otra cuenta arranca limpio.
+*/
+function logout(){
+  closeModal();
+  stopPreview();
+  killGalaxies();
+  localStorage.removeItem('aresGalaxy.sp.tokens');
+  localStorage.removeItem('aresGalaxy.sp.verifier');
+  localStorage.removeItem('aresGalaxy.sp.state');
+  localStorage.removeItem('aresGalaxy.yt.token');
+  if(spPlayer){ try{ spPlayer.disconnect(); }catch(e){} spPlayer=null; spDeviceId=null; }
+  if(ytPlayer){ try{ ytPlayer.destroy(); }catch(e){} ytPlayer=null; ytPlayerReady=false; }
+  const ytMount = document.getElementById('yt-player-mount'); if(ytMount) ytMount.remove();
+
+  localStorage.removeItem(ACTIVE_PTR_KEY);
+  ACTIVE_ACCOUNT = null;
+  resetAppStateForNewAccount();
+  state.gate = 'landing';
+
+  history.replaceState({}, '', window.location.pathname);
+  location.hash = '';
+  render();
+  toast('Cerraste sesión. Tu galaxia queda guardada para cuando vuelvas con esta misma cuenta.');
+}
+function confirmLogout(){
+  state.modal = { type:'confirmLogout' };
+  renderOverlays();
 }
 
 // AI curator — responde en base a TU música real (SONGS/MEMORIES/USER), no a
@@ -1007,6 +1139,16 @@ function stopMediaTicker(){ if(mediaTicker){ clearInterval(mediaTicker); mediaTi
 
 const GOLDEN_ANGLE = 2.399963229728653;
 
+// Asignación determinística amigo → canción real y reproducible (por
+// índice, no al azar) — usada tanto por la galaxia como por Discover, para
+// que "quién escucha qué" sea consistente en toda la app y nunca invente una
+// canción que no pueda sonar de verdad.
+function friendListeningAssignments(){
+  const playable = SONGS.filter(songIsPlayable);
+  if(!playable.length) return [];
+  return FRIENDS.map((f,i)=> ({ friend:f, song: playable[i % playable.length] }));
+}
+
 function buildGalaxyGraph(){
   const nodes = {};
   const edgeSet = new Set();
@@ -1051,6 +1193,24 @@ function buildGalaxyGraph(){
     addEdge('me','song-'+s.id);
   });
 
+  // Amigos musicales conectados de forma FUNCIONAL a la galaxia: cada amigo
+  // "está escuchando" una canción real y reproducible tuya (nunca una
+  // inventada), asignada de forma determinística (por índice, no al azar en
+  // cada render) para que la conexión sea estable entre una vuelta y otra.
+  // Si todavía no hay ninguna canción reproducible en tu galaxia, no se
+  // dibuja ningún amigo — nunca simulamos que alguien escucha algo que no
+  // suena de verdad.
+  friendListeningAssignments().forEach(({friend:f, song}, i)=>{
+    const songNodeId = 'song-'+song.id;
+    if(!nodes[songNodeId]){
+      nodes[songNodeId] = { id:songNodeId, type:'song', label:song.title, songId:song.id, ring:1, minor:true };
+      addEdge('me', songNodeId);
+    }
+    const friendNodeId = 'friend-'+i;
+    nodes[friendNodeId] = { id:friendNodeId, type:'friend', label:f.name, ring:2, friendIndex:i, songIds:[song.id] };
+    addEdge(songNodeId, friendNodeId);
+  });
+
   // joined communities
   COMMUNITIES.filter(c=>c.joined).forEach(c=>{
     nodes['comm-'+c.id] = { id:'comm-'+c.id, type:'community', label:c.name, commId:c.id, ring:1 };
@@ -1074,7 +1234,7 @@ function buildGalaxyGraph(){
 }
 
 const NODE_COLORS = {
-  me:'#F5F3FF', song:'#7B5CFA', tag:'#3D7BFF', place:'#F5A623', person:'#FF3DBE', community:'#FF3DBE'
+  me:'#F5F3FF', song:'#7B5CFA', tag:'#3D7BFF', place:'#F5A623', person:'#FF3DBE', community:'#FF3DBE', friend:'#FF3DBE'
 };
 
 let activeGalaxies = [];
@@ -1481,9 +1641,22 @@ function songFromSpotifySearchTrack(t, extra){
 async function spotifySync(){
   try{
     const me = await spFetch('/me');
+    const firstBoot = !state.onboarded;
+    // Login "en frío" (venías de la puerta de entrada, sin galaxia activa
+    // todavía): esta cuenta real de Spotify SE CONVIERTE en la sesión activa.
+    // Si ya habías construido una galaxia con esta misma cuenta antes en este
+    // navegador, la recuperamos íntegra; si no, arrancamos de cero — nunca
+    // heredando datos de otra cuenta que haya usado este navegador antes.
+    if(firstBoot && me.id) switchAccount('spotify:'+me.id);
+    else if(!ACTIVE_ACCOUNT) ACTIVE_ACCOUNT = 'local';
     let pulled = 0;
-    try{ const top = await spFetch('/me/top/tracks', {limit:10, time_range:'medium_term'}); (top.items||[]).forEach(t=>{ songFromSpotifyTrack(t, {tag:'Top Spotify'}); pulled++; }); }catch(e){ console.warn('top tracks', e); }
-    try{ const saved = await spFetch('/me/tracks', {limit:20}); (saved.items||[]).forEach(it=>{ songFromSpotifyTrack(it.track); pulled++; }); }catch(e){ console.warn('saved tracks', e); }
+    // Varias ventanas de tiempo (no solo "medium_term") para que la galaxia
+    // arranque con una mezcla real y variada desde el primer momento, no con
+    // siempre los mismos 10 temas. Se deduplica solo (upsertSong por id).
+    for(const tr of ['short_term','medium_term','long_term']){
+      try{ const top = await spFetch('/me/top/tracks', {limit:15, time_range:tr}); (top.items||[]).forEach(t=>{ songFromSpotifyTrack(t, {tag:'Top Spotify'}); pulled++; }); }catch(e){ console.warn('top tracks', tr, e); }
+    }
+    try{ const saved = await spFetch('/me/tracks', {limit:30}); (saved.items||[]).forEach(it=>{ songFromSpotifyTrack(it.track); pulled++; }); }catch(e){ console.warn('saved tracks', e); }
     try{ const recent = await spFetch('/me/player/recently-played', {limit:20}); (recent.items||[]).forEach(it=>{ songFromSpotifyTrack(it.track, {tag:'Escuchado recientemente'}); pulled++; }); }catch(e){ console.warn('recently played', e); }
     // Artistas favoritos reales (no la lista de ejemplo del perfil demo)
     try{
@@ -1491,11 +1664,14 @@ async function spotifySync(){
       const names = (topArtists.items||[]).map(a=>a.name).filter(Boolean);
       if(names.length) USER.favArtists = names;
     }catch(e){ console.warn('top artists', e); }
+    // Baraja el orden con el que la galaxia y Discover presentan tu música
+    // real recién traída — para que se sienta como una selección viva de tu
+    // catálogo real y no siempre el mismo orden fijo de "top tracks".
+    for(let i=SONGS.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [SONGS[i],SONGS[j]]=[SONGS[j],SONGS[i]]; }
     CONNECTIONS.spotify.connected = true;
     CONNECTIONS.spotify.profile = { name: me.display_name, id: me.id, product: me.product };
     CONNECTIONS.spotify.lastSync = Date.now();
     CONNECTIONS.spotify.counts = { canciones: pulled };
-    const firstBoot = !state.onboarded;
     if(firstBoot){
       if(me.display_name){ USER.name = me.display_name; USER.handle = '@'+slugify(me.display_name); }
       // Sin onboarding manual no hay ninguna fuente real de "etapas de vida"
@@ -1557,7 +1733,7 @@ async function ensureSpotifyPlayer(){
     spPlayer = new Spotify.Player({
       name: 'Ares Galaxy',
       getOAuthToken: async (cb)=>{ const t = await spEnsureToken(); cb(t || ''); },
-      volume: 0.85,
+      volume: state.volume,
     });
     spPlayer.addListener('ready', ({device_id})=>{ spDeviceId = device_id; });
     spPlayer.addListener('not_ready', ()=>{ spDeviceId = null; });
@@ -1630,7 +1806,7 @@ async function ensureYoutubePlayer(){
       height:'90', width:'160',
       playerVars:{ autoplay:1, controls:1 },
       events:{
-        onReady: ()=>{ ytPlayerReady = true; resolve(ytPlayer); },
+        onReady: ()=>{ ytPlayerReady = true; try{ ytPlayer.setVolume(Math.round(state.volume*100)); }catch(e){} resolve(ytPlayer); },
         onStateChange: (e)=>{ if(window.YT && e.data===YT.PlayerState.ENDED) playNext(true); },
         onError: ()=>{
           const failedSong = current && current.kind==='youtube' ? findSong(current.songId) : null;
@@ -1734,6 +1910,12 @@ async function youtubeSync(){
   try{
     const ch = await ytFetch('/channels', {part:'contentDetails,snippet', mine:'true'});
     const me = ch.items && ch.items[0];
+    const firstBoot = !state.onboarded;
+    // Igual que con Spotify: un login en frío hace que este canal real de
+    // YouTube sea la cuenta activa, recuperando su propia galaxia guardada
+    // (si existe) sin mezclarse con la de otra cuenta.
+    if(firstBoot && me && me.id) switchAccount('youtube:'+me.id);
+    else if(!ACTIVE_ACCOUNT) ACTIVE_ACCOUNT = 'local';
     const likesId = me && me.contentDetails && me.contentDetails.relatedPlaylists && me.contentDetails.relatedPlaylists.likes;
     let pulled = 0;
     if(likesId){
@@ -1744,7 +1926,6 @@ async function youtubeSync(){
     CONNECTIONS.youtube.profile = me ? { name: me.snippet.title } : null;
     CONNECTIONS.youtube.lastSync = Date.now();
     CONNECTIONS.youtube.counts = { canciones: pulled };
-    const firstBoot = !state.onboarded;
     if(firstBoot){ state.onboarded = true; state.gate = 'app'; }
     persist();
     toast(pulled ? `YouTube conectado — ${pulled} elementos desde tus "Me gusta"` : 'YouTube conectado — no encontramos videos en "Me gusta" para traer');
@@ -1823,7 +2004,13 @@ function doImport(raw, platform){
     CONNECTIONS[platform].counts = { canciones: ((CONNECTIONS[platform].counts&&CONNECTIONS[platform].counts.canciones)||0) + count, importado:true };
   }
   const firstBoot = !state.onboarded;
-  if(firstBoot){ state.onboarded = true; state.gate = 'app'; }
+  if(firstBoot){
+    // La importación no tiene una identidad verificable (no es un OAuth
+    // real), así que arranca/continúa la sesión local de este navegador en
+    // vez de inventar una "cuenta" para una plataforma que no autenticó nada.
+    if(!ACTIVE_ACCOUNT) ACTIVE_ACCOUNT = 'local';
+    state.onboarded = true; state.gate = 'app';
+  }
   persist();
   closeModal();
   toast(`Importaste ${count} canción${count===1?'':'es'}${platform && PLATFORM_META[platform] ? ' desde '+PLATFORM_META[platform].label : ''}`);
@@ -1860,6 +2047,9 @@ const state = {
   queueIndex: -1,    // posición actual dentro de state.queue
   queueOpen: false,  // panel "Siguientes canciones" visible
   playerExpanded: false, // reproductor expandido a pantalla completa
+  volume: 0.85,      // volumen real (Spotify SDK / YouTube IFrame API), 0–1
+  shuffle: false,    // reproducción aleatoria real: baraja la cola pendiente
+  expandedInfoOpen: false, // panel de info/etiquetas dentro del reproductor expandido
   discover: { loading:false, error:null, items:[], loadedFor:null }, // feed real de Discover
   galaxyFocus: null, // {type:'artist', id, name, items:[]} — universo explorado dentro de la galaxia
 };
@@ -2005,6 +2195,47 @@ function queuePlayAt(idx){
 function toggleQueuePanel(){ state.queueOpen = !state.queueOpen; renderQueuePanel(); }
 function togglePlayerExpanded(){ state.playerExpanded = !state.playerExpanded; renderExpandedPlayer(); }
 
+// ---- Volumen real (Spotify Web Playback SDK / YouTube IFrame API) ----
+function setVolume(val){
+  const v = Math.max(0, Math.min(1, parseFloat(val)));
+  state.volume = v;
+  if(current && current.kind==='spotify' && spPlayer){ try{ spPlayer.setVolume(v); }catch(e){} }
+  else if(current && current.kind==='youtube' && ytPlayer && ytPlayerReady && typeof ytPlayer.setVolume==='function'){ try{ ytPlayer.setVolume(Math.round(v*100)); }catch(e){} }
+  document.querySelectorAll('.volume-fill').forEach(el=> el.style.width = (v*100)+'%');
+}
+function toggleMute(){
+  if(state.volume>0){ state._prevVolume = state.volume; setVolume(0); }
+  else setVolume(state._prevVolume || 0.85);
+  renderExpandedPlayer(); renderMiniPlayer();
+}
+function onVolumeBarClick(evt, el){
+  const rect = (el||evt.currentTarget).getBoundingClientRect();
+  const frac = (evt.clientX - rect.left) / rect.width;
+  setVolume(frac);
+}
+function volumeControlHTML(size){
+  const w = size==='lg' ? 90 : 60;
+  return `
+  <div style="display:flex; align-items:center; gap:6px;" onclick="event.stopPropagation()">
+    <button class="icon-btn" title="${state.volume>0?'Silenciar':'Activar sonido'}" onclick="toggleMute()">${state.volume>0?ICONS.volume:ICONS.volumeMute}</button>
+    <div class="mini-player-progress volume-bar" style="width:${w}px; border-radius:4px; cursor:pointer;" onclick="onVolumeBarClick(event, this)"><div class="mini-player-progress-fill volume-fill" style="width:${(state.volume*100)}%;"></div></div>
+  </div>`;
+}
+// ---- Aleatorio real: baraja la cola pendiente (Fisher–Yates), sin tocar
+// lo que ya sonó ni la canción actual, así "Siguiente" pasa a un orden
+// realmente aleatorio en vez de simular el botón sin cambiar nada. ----
+function toggleShuffle(){
+  state.shuffle = !state.shuffle;
+  if(state.shuffle && state.queue.length>2){
+    const head = state.queue.slice(0, state.queueIndex+1);
+    const tail = state.queue.slice(state.queueIndex+1);
+    for(let i=tail.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [tail[i],tail[j]]=[tail[j],tail[i]]; }
+    state.queue = head.concat(tail);
+  }
+  toast(state.shuffle ? 'Aleatorio activado — barajamos lo que sigue en tu cola' : 'Aleatorio desactivado');
+  renderQueuePanel(); renderExpandedPlayer(); renderMiniPlayer();
+}
+
 function onPreviewChange(info){
   state.playing = info;
   renderMiniPlayer();
@@ -2018,7 +2249,9 @@ function onPreviewProgress(progress){
 function playerControlsHTML(size){
   const hasNext = state.queue.length>1;
   const isPaused = state.playing && state.playing.paused;
+  const shuffleBtn = `<button class="icon-btn ${size==='lg'?'player-btn-lg':''}" style="${state.shuffle?'color:var(--magenta);':''}" onclick="toggleShuffle()" title="${state.shuffle?'Aleatorio activado':'Activar aleatorio'}" ${state.queue.length>2?'':'disabled'}>${ICONS.shuffle}</button>`;
   return `
+    ${shuffleBtn}
     <button class="icon-btn ${size==='lg'?'player-btn-lg':''}" onclick="playPrev()" title="Anterior" ${hasNext?'':'disabled'}>${ICONS.prev}</button>
     <button class="icon-btn ${size==='lg'?'player-btn-lg player-btn-main':''}" onclick="togglePreview(state.playing.songId)" title="${isPaused?'Reanudar':'Pausar'}">${isPaused?ICONS.play:ICONS.pause}</button>
     <button class="icon-btn ${size==='lg'?'player-btn-lg':''}" onclick="playNext(false)" title="Siguiente" ${hasNext?'':'disabled'}>${ICONS.next}</button>`;
@@ -2035,6 +2268,7 @@ function renderMiniPlayer(){
       <div class="mini-player-art ${songArtClass(song)}" onclick="togglePlayerExpanded()" style="cursor:pointer; ${songArtStyle(song)}"></div>
       <div class="mini-player-meta" onclick="togglePlayerExpanded()" style="cursor:pointer;"><b>${song.title}</b><span>${song.artist}</span></div>
       <div class="mini-player-controls">${playerControlsHTML()}</div>
+      <button class="icon-btn mp-memory-btn" onclick="openAddMemory(state.playing.songId); event.stopPropagation();" title="Convertir en recuerdo">${ICONS.heart}</button>
       <button class="icon-btn" onclick="toggleQueuePanel()" title="Siguientes canciones">${ICONS.queue}${upcoming>0?`<span class="mp-queue-badge">${upcoming}</span>`:''}</button>
       <button class="icon-btn" onclick="togglePlayerExpanded()" title="Expandir">${ICONS.expand}</button>
       <button class="icon-btn" onclick="stopPreviewFully(event)" title="Cerrar reproductor">${ICONS.close}</button>
@@ -2080,6 +2314,8 @@ function renderExpandedPlayer(){
   if(!state.playerExpanded || !state.playing){ root.innerHTML=''; return; }
   const { song } = state.playing;
   const upcoming = state.queue.slice(state.queueIndex+1, state.queueIndex+5).map(findSong).filter(Boolean);
+  const linkedMemories = MEMORIES.filter(m=>m.songId===song.id);
+  const infoOpen = state.expandedInfoOpen;
   root.innerHTML = `
   <div class="expanded-player" onclick="if(event.target===this) togglePlayerExpanded()">
     <div class="expanded-player-inner">
@@ -2092,10 +2328,34 @@ function renderExpandedPlayer(){
       </div>
       <div class="mini-player-progress expanded-progress" onclick="onSeekBarClick(event, this)"><div class="mini-player-progress-fill mp-progress-fill" id="mp-progress-fill-2"></div></div>
       <div class="expanded-player-controls">${playerControlsHTML('lg')}</div>
-      <div style="display:flex; gap:10px; margin-top:8px;">
-        <button class="pill-btn ghost" onclick="toggleSave('${song.id}')">${ICONS.save} ${song.saved?'Guardada':'Guardar'}</button>
-        <button class="pill-btn ghost" onclick="toggleQueuePanel()">${ICONS.queue} Cola${upcoming.length?' ('+upcoming.length+')':''}</button>
+      <div style="margin-top:14px;">${volumeControlHTML('lg')}</div>
+
+      <button class="pill-btn" style="width:100%; justify-content:center; margin-top:20px; padding:13px;" onclick="openAddMemory('${song.id}')">${ICONS.heart} Convertir esta canción en un recuerdo</button>
+      <p class="page-sub" style="margin-top:8px; font-size:11.5px;">La canción no es solo algo que escuchas — es algo que puedes guardar dentro de tu historia.</p>
+
+      <div style="display:flex; gap:10px; margin-top:14px; width:100%;">
+        <button class="pill-btn ghost" style="flex:1; justify-content:center;" onclick="toggleSave('${song.id}')">${ICONS.save} ${song.saved?'Guardada':'Guardar'}</button>
+        <button class="pill-btn ghost" style="flex:1; justify-content:center;" onclick="toggleQueuePanel()">${ICONS.queue} Cola${upcoming.length?' ('+upcoming.length+')':''}</button>
+        <button class="pill-btn ghost" style="flex:1; justify-content:center;" onclick="state.expandedInfoOpen=!state.expandedInfoOpen; renderExpandedPlayer();">${ICONS.info} Info</button>
       </div>
+
+      ${infoOpen ? `
+      <div class="panel panel-pad" style="width:100%; margin-top:14px; text-align:left; background:var(--panel-2);">
+        <div style="font-family:'JetBrains Mono'; font-size:10px; color:var(--mute); letter-spacing:.08em; margin-bottom:8px;">SOBRE ESTA CANCIÓN</div>
+        <div style="font-size:12.5px; color:var(--mute); display:flex; flex-direction:column; gap:4px; margin-bottom:${linkedMemories.length?'14px':'0'};">
+          <div><b style="color:var(--white);">Fuente:</b> ${(state.playing.platformLabel||'—')}${song.tag?' · '+song.tag:''}</div>
+          ${song.artistIds && song.artistIds[0] ? `<div style="cursor:pointer; color:var(--violet);" onclick="closeModal(); togglePlayerExpanded(); exploreArtistUniverse('${(song.artist||'').replace(/'/g,"\\'")}','${song.artistIds[0]}')">${ICONS.artist} Ver universo de ${song.artist}</div>` : ''}
+        </div>
+        ${linkedMemories.length ? `
+        <div style="font-family:'JetBrains Mono'; font-size:10px; color:var(--amber); letter-spacing:.08em; margin-bottom:8px;">ETIQUETAS Y RECUERDOS (${linkedMemories.length})</div>
+        ${linkedMemories.map(m=>`
+          <div style="padding:8px 0; border-top:1px solid var(--line-soft); cursor:pointer;" onclick="togglePlayerExpanded(); openMemoryDrawer('${m.id}')">
+            <div class="tag-picker" style="margin-bottom:6px;">${m.tags.map(t=>`<span class="tag-opt on" style="font-size:10px; padding:3px 8px;">${t}</span>`).join('')}</div>
+            <div style="font-size:11.5px; color:var(--mute);">${m.place} · ${m.people.join(', ')} · ${m.date}</div>
+          </div>`).join('')}
+        ` : `<p style="font-size:11.5px; color:var(--mute-2); margin:0;">Todavía no tiene etiquetas ni recuerdos — conviértela en recuerdo arriba para agregarle personas, lugar y una foto.</p>`}
+      </div>` : ''}
+
       ${upcoming.length ? `
       <div class="expanded-upcoming">
         <div class="section-title" style="margin-bottom:10px;"><span class="dot"></span>A continuación</div>
@@ -2141,11 +2401,12 @@ function shellHTML(){
           ${n.badge && n.badge() ? `<span class="badge">${n.badge()}</span>` : ''}
         </a>`).join('')}
     </nav>
-    <div class="sidebar-foot">
-      <a href="#/profile" class="user-chip">
+    <div class="sidebar-foot" style="display:flex; align-items:center; gap:6px;">
+      <a href="#/profile" class="user-chip" style="flex:1; min-width:0;">
         <div class="avatar" style="background:linear-gradient(135deg,var(--violet),var(--magenta))">${getInitials(USER.name)}</div>
         <div class="user-chip-meta"><b>${USER.name}</b><small>${USER.handle}</small></div>
       </a>
+      <button class="icon-btn" title="Cerrar sesión" onclick="confirmLogout()">${ICONS.logout}</button>
     </div>
   </aside>
   <div class="main-col">
@@ -2279,10 +2540,22 @@ function songCard(s, ctxIds){
   const isCurrent = state.playing && state.playing.songId===s.id;
   const isPlaying = isCurrent && !state.playing.paused;
   const playCall = ctxIds ? `playListContext(${JSON.stringify(ctxIds)}, '${s.id}')` : `togglePreview('${s.id}', event)`;
+  // Honestidad visual: una canción sin fuente real conectada (importada, o
+  // de una plataforma que ya no está conectada) NUNCA muestra el mismo
+  // botón de "reproducir" que una canción de verdad reproducible — se ve
+  // distinta a propósito, para no repetir "canciones bonitas sin sonido".
+  const playable = songIsPlayable(s);
+  const canOpenExternally = !playable && s.source==='spotify';
+  let ringIcon, ringTitle, ringClass = '';
+  if(isPlaying){ ringIcon = ICONS.pause; ringTitle = 'Pausar'; }
+  else if(isCurrent){ ringIcon = ICONS.play; ringTitle = 'Reanudar'; }
+  else if(playable){ ringIcon = ICONS.play; ringTitle = 'Reproducir'; }
+  else if(canOpenExternally){ ringIcon = ICONS.link; ringTitle = 'Reconecta Spotify para reproducirla aquí — mientras tanto la abrimos en Spotify'; ringClass = 'is-unplayable'; }
+  else { ringIcon = ICONS.volumeMute; ringTitle = 'Sin audio conectado todavía — importada o sin plataforma activa'; ringClass = 'is-unplayable'; }
   return `
   <div class="song-card ${isCurrent?'is-playing':''}">
     <div class="song-art ${songArtClass(s)}" style="${songArtStyle(s)}">
-      <div class="play-ring ${isPlaying?'is-playing':''}" onclick="${isCurrent?`togglePreview('${s.id}', event)`:playCall}" title="${isPlaying?'Pausar':(isCurrent?'Reanudar':'Reproducir')}">${isPlaying?ICONS.pause:ICONS.play}</div>
+      <div class="play-ring ${isPlaying?'is-playing':''} ${ringClass}" onclick="${isCurrent?`togglePreview('${s.id}', event)`:playCall}" title="${ringTitle}">${ringIcon}</div>
       <button class="mini-btn song-art-artist-btn" title="Explorar artista" onclick="event.stopPropagation(); exploreArtistUniverse('${(s.artist||'').replace(/'/g,"\\'")}', '${(s.artistIds&&s.artistIds[0])||''}')">${ICONS.artist}</button>
     </div>
     <div class="song-title">${s.title}</div>
@@ -2290,6 +2563,7 @@ function songCard(s, ctxIds){
     <div class="song-meta-row">
       <div style="display:flex; gap:6px; align-items:center; overflow:hidden;">
         ${s.tag ? `<span class="chip on">${s.tag}</span>` : (isPlaying ? `<span class="chip">sonando…</span>` : (isCurrent ? `<span class="chip">en pausa</span>` : ''))}
+        ${!playable ? `<span class="chip" style="border-color:var(--mute-2); color:var(--mute-2);" title="${ringTitle}">sin audio aquí</span>` : ''}
         ${sourceBadge(s)}
       </div>
       <button class="mini-btn ${s.saved?'saved':''}" title="Guardar" onclick="toggleSave('${s.id}')">${ICONS.save}</button>
@@ -2303,14 +2577,24 @@ function viewDiscover(){
   const tabs = [
     {id:'songs', label:'Canciones'},
     {id:'artists', label:'Artistas'},
+    {id:'saved', label:'Guardadas'},
+    {id:'recent', label:'Recientes'},
     {id:'scenes', label:'Escenas'},
-    {id:'curators', label:'Curadores'},
+    {id:'curators', label:'Amigos'},
   ];
   const emptyPanel = (msg)=> `<div class="panel panel-pad" style="text-align:center; color:var(--mute-2); font-size:12.5px;">${msg}</div>`;
   let body = '';
   if(state.discoverTab==='songs'){
     const ids = SONGS.map(s=>s.id);
     body = SONGS.length ? `<div class="grid g4">${SONGS.map(s=>songCard(s, ids)).join('')}</div>` : emptyPanel('Aún no hay canciones reales aquí. Conecta Spotify o YouTube, importa tu música, o usa el buscador para empezar a llenar tu galaxia.');
+  } else if(state.discoverTab==='saved'){
+    const saved = SONGS.filter(s=>s.saved);
+    const ids = saved.map(s=>s.id);
+    body = saved.length ? `<div class="grid g4">${saved.map(s=>songCard(s, ids)).join('')}</div>` : emptyPanel('Aún no has guardado ninguna canción real — toca el ícono de guardar en cualquier canción para que aparezca aquí.');
+  } else if(state.discoverTab==='recent'){
+    const recent = SONGS.filter(s=>s.tag==='Escuchado recientemente');
+    const ids = recent.map(s=>s.id);
+    body = recent.length ? `<div class="grid g4">${recent.map(s=>songCard(s, ids)).join('')}</div>` : emptyPanel('Todavía no tenemos tu actividad reciente real — se llena al conectar o sincronizar Spotify.');
   } else if(state.discoverTab==='artists'){
     const artists = [...new Map(SONGS.map(s=>[s.artist.split(' ft.')[0], (s.artistIds&&s.artistIds[0])||null])).entries()];
     body = artists.length ? `<div class="grid g4">${artists.map(([a,aid],i)=>`
@@ -2323,18 +2607,29 @@ function viewDiscover(){
   } else if(state.discoverTab==='scenes'){
     body = `<div class="grid g3">${COMMUNITIES.map(communityCard).join('')}</div>`;
   } else {
+    const assignments = friendListeningAssignments();
     body = `
-    <p style="font-size:10.5px; color:var(--mute-2); font-family:'JetBrains Mono'; margin-bottom:14px;">Vista ilustrativa — un directorio real de curadores requeriría cuentas de otras personas conectadas a un backend compartido, que este prototipo local no tiene.</p>
+    <p style="font-size:10.5px; color:var(--mute-2); font-family:'JetBrains Mono'; margin-bottom:14px;">Quién es amigo/a y qué recomienda es una vista ilustrativa — un directorio real de amigos requeriría que ellos también conectaran su cuenta a un backend compartido, que este prototipo local no tiene. Pero la canción que ves junto a cada uno SÍ es real y reproducible desde tu galaxia.</p>
     <div class="grid g3">
-      ${FRIENDS.map(f=>`
-        <div class="panel panel-pad" style="display:flex; gap:12px; align-items:center;">
-          <div class="avatar" style="width:44px;height:44px;background:${f.color}">${f.init}</div>
-          <div style="flex:1; min-width:0;">
-            <div style="font-weight:600; font-size:13px;">${f.name}</div>
-            <div style="font-size:11px; color:var(--mute); margin-top:2px;">Curador de confianza · 3 recomendaciones esta semana</div>
+      ${FRIENDS.map((f,i)=>{
+        const a = assignments.find(x=>x.friend===f);
+        return `
+        <div class="panel panel-pad" style="display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; gap:12px; align-items:center;">
+            <div class="avatar" style="width:44px;height:44px;background:${f.color}">${f.init}</div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-weight:600; font-size:13px;">${f.name}</div>
+              <div style="font-size:11px; color:var(--mute); margin-top:2px;">${a?'Escuchando ahora':'Amigo/a musical'}</div>
+            </div>
           </div>
-          <button class="btn-line">Seguir</button>
-        </div>`).join('')}
+          ${a ? `
+          <div class="panel panel-pad" style="background:var(--panel-2); display:flex; gap:10px; align-items:center; cursor:pointer;" onclick="togglePreview('${a.song.id}')">
+            <div class="song-art ${songArtClass(a.song)}" style="width:36px;height:36px;margin:0;border-radius:8px; ${songArtStyle(a.song)}"></div>
+            <div style="flex:1; min-width:0;"><div style="font-size:11.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${a.song.title}</div><div style="font-size:10px; color:var(--mute);">${a.song.artist}</div></div>
+            <div class="play-ring" style="width:26px;height:26px;">${(state.playing && state.playing.songId===a.song.id && !state.playing.paused)?ICONS.pause:ICONS.play}</div>
+          </div>` : `<p style="font-size:11px; color:var(--mute-2); margin:0;">Conecta Spotify o YouTube para ver qué canción real le conectamos.</p>`}
+        </div>`;
+      }).join('')}
     </div>`;
   }
   return `
@@ -2494,14 +2789,21 @@ function viewConnections(){
     </div>
     <div class="panel panel-pad" style="margin-top:20px; border-color:var(--magenta);">
       <div class="section-title" style="margin-bottom:8px;"><span class="dot"></span>Zona de reinicio</div>
-      <p class="page-sub" style="margin-bottom:14px;">Borra la galaxia guardada en este navegador (canciones, memorias, conexiones) — útil para volver a probar el flujo de conexión desde cero. No se puede deshacer.</p>
-      <button class="btn-line" onclick="resetLocalGalaxy()">Restablecer galaxia local</button>
+      <p class="page-sub" style="margin-bottom:14px;">Borra TODAS las galaxias guardadas en este navegador (todas las cuentas — local, Spotify, YouTube) — útil para volver a probar el flujo completo de conexión desde cero. No se puede deshacer. Para salir solo de la cuenta actual sin borrar nada, usa "Cerrar sesión" en tu Perfil.</p>
+      <button class="btn-line" onclick="resetLocalGalaxy()">Restablecer todas las galaxias locales</button>
     </div>
   </div>`;
 }
 function resetLocalGalaxy(){
-  if(!confirm('Esto borra tu galaxia guardada en este navegador (canciones, memorias, conexiones) y no se puede deshacer. ¿Continuar?')) return;
-  ['aresGalaxy.state.v1','aresGalaxy.sp.tokens','aresGalaxy.sp.verifier','aresGalaxy.sp.state','aresGalaxy.yt.token']
+  if(!confirm('Esto borra TODAS las galaxias guardadas en este navegador (todas las cuentas: local y cualquier Spotify/YouTube que hayas usado aquí, con sus canciones, memorias y conexiones) y no se puede deshacer. ¿Continuar?')) return;
+  // Borra tanto el cajón de la cuenta activa como cualquier otro cajón de
+  // cuenta que haya quedado guardado en este navegador (aresGalaxy.account.*),
+  // más el puntero de sesión activa y los tokens de plataformas — un reinicio
+  // real y total, no solo de la cuenta que estaba abierta en este momento.
+  Object.keys(localStorage)
+    .filter(k=> k.startsWith(ACCOUNT_KEY_PREFIX) || k===LEGACY_LS_KEY || k===ACTIVE_PTR_KEY)
+    .forEach(k=>localStorage.removeItem(k));
+  ['aresGalaxy.sp.tokens','aresGalaxy.sp.verifier','aresGalaxy.sp.state','aresGalaxy.yt.token']
     .forEach(k=>localStorage.removeItem(k));
   location.href = location.pathname;
 }
@@ -2724,6 +3026,14 @@ function viewProfile(){
         </div>
       </div>
     </div>
+
+    <div class="panel panel-pad" style="margin-top:24px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+      <div>
+        <div class="section-title" style="margin-bottom:6px;"><span class="dot"></span>Sesión</div>
+        <p class="page-sub" style="margin:0; max-width:520px;">Conectado como <b>${USER.name}</b>${(CONNECTIONS.spotify.connected || CONNECTIONS.youtube.connected) ? ` vía ${[CONNECTIONS.spotify.connected?'Spotify':null, CONNECTIONS.youtube.connected?'YouTube':null].filter(Boolean).join(' + ')}` : ' (sesión local, sin plataforma conectada)'}. Cerrar sesión desconecta tu plataforma, limpia esta sesión y te lleva de vuelta al inicio — tu galaxia queda guardada para cuando vuelvas con esta misma cuenta.</p>
+      </div>
+      <button class="btn-line" style="flex:none;" onclick="confirmLogout()">${ICONS.logout} Cerrar sesión</button>
+    </div>
   </div>`;
 }
 
@@ -2768,6 +3078,7 @@ function viewGalaxy(){
     {id:'tag', label:'Etapas'},
     {id:'person', label:'Personas'},
     {id:'place', label:'Lugares'},
+    {id:'friend', label:'Amigos'},
     {id:'community', label:'Comunidades'},
   ];
   return `
@@ -2796,7 +3107,7 @@ function viewGalaxy(){
         <div><span class="legend-dot" style="background:var(--violet)"></span>Canciones</div>
         <div><span class="legend-dot" style="background:var(--blue)"></span>Etapas / tags</div>
         <div><span class="legend-dot" style="background:var(--amber)"></span>Lugares</div>
-        <div><span class="legend-dot" style="background:var(--magenta)"></span>Personas / comunidades</div>
+        <div><span class="legend-dot" style="background:var(--magenta)"></span>Personas / amigos / comunidades</div>
       </div>
       <div class="galaxy-hint">Click en una canción = reproducir · doble click = ver detalle</div>
     </div>
@@ -2921,7 +3232,7 @@ function drawerHTML(){
 }
 
 function nodeDrawerHTML(node){
-  const typeLabel = {me:'Tú', song:'Canción', tag:'Etapa / momento', place:'Lugar', person:'Persona', community:'Comunidad'}[node.type] || node.type;
+  const typeLabel = {me:'Tú', song:'Canción', tag:'Etapa / momento', place:'Lugar', person:'Persona', community:'Comunidad', friend:'Amigo/a musical'}[node.type] || node.type;
   const linkedSongs = (node.songIds||[]).map(findSong).filter(Boolean);
   let extra = '';
   if(node.type==='song'){
@@ -2957,6 +3268,7 @@ function nodeDrawerHTML(node){
       <div class="drawer-body">
         <p class="page-sub" style="margin-bottom:16px;">${
           node.type==='community' ? 'Comunidad conectada a tu galaxia musical.' :
+          node.type==='friend' ? 'Está escuchando esta canción real ahora mismo en tu galaxia — vista ilustrativa (mostrar su actividad real requeriría que también conectara su cuenta a un backend compartido), pero la canción conectada es 100% real y reproducible.' :
           node.type==='person' ? 'Esta persona aparece en varios recuerdos musicales tuyos.' :
           node.type==='place' ? 'Este lugar está conectado con canciones importantes de tu historia.' :
           'Esta etapa agrupa canciones que definieron un momento de tu vida.'
@@ -3056,6 +3368,27 @@ function closeModal(){ state.modal = null; renderOverlays(); }
 
 function modalHTML(){
   if(!state.modal) return '';
+  if(state.modal.type==='confirmLogout'){
+    return `
+    <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+      <div class="modal" style="max-width:420px;">
+        <div class="modal-head" style="display:flex; align-items:flex-start; justify-content:space-between; gap:14px;">
+          <div>
+            <span class="page-eyebrow">CERRAR SESIÓN</span>
+            <h3 style="font-size:19px;">¿Salir de la cuenta de ${USER.name.split(' ')[0]}?</h3>
+          </div>
+          <button class="drawer-close" onclick="closeModal()">${ICONS.close}</button>
+        </div>
+        <div class="modal-body">
+          <p class="page-sub" style="margin:0 0 16px;">Desconectaremos tu plataforma de streaming, limpiaremos esta sesión por completo y volverás a la pantalla inicial. Tu galaxia (canciones guardadas, memorias y fotos) queda guardada en este navegador para cuando inicies sesión de nuevo con esta misma cuenta — no se mezclará con ninguna otra cuenta que uses después.</p>
+          <div style="display:flex; gap:10px;">
+            <button class="btn-line" style="flex:1; text-align:center;" onclick="closeModal()">Cancelar</button>
+            <button class="pill-btn" style="flex:1; justify-content:center;" onclick="logout()">${ICONS.logout} Cerrar sesión</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
   if(state.modal.type==='import'){
     const platform = state.modal.platform;
     const meta = platform ? PLATFORM_META[platform] : null;
@@ -3342,6 +3675,13 @@ function gateHTML(){
   return landingGateHTML();
 }
 function landingGateHTML(){
+  // Si ya existe una galaxia local guardada en este navegador (creada antes
+  // sin conectar ninguna plataforma), la ofrecemos como opción de "retomar"
+  // en vez de forzar a pasar de nuevo por el onboarding — que borraría esa
+  // galaxia al guardar la nueva. Así "misma cuenta → recupero mi galaxia"
+  // también aplica a la sesión local, no solo a Spotify/YouTube.
+  let hasLocalAccount = false;
+  try{ hasLocalAccount = !!localStorage.getItem(accountKey('local')); }catch(e){}
   return `
   <div class="onb-overlay">
     <div class="onb-wrap">
@@ -3352,12 +3692,26 @@ function landingGateHTML(){
         <p class="onb-sub" style="max-width:480px;">Ares Galaxy no reemplaza tu Spotify, tu YouTube o tu Deezer — se conecta a ellos y convierte tu actividad real en una sola galaxia personal.</p>
         <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:6px;">
           <button class="pill-btn" style="padding:13px 26px; font-size:13.5px;" onclick="gateGoLogin()">Iniciar sesión ${ICONS.chevr}</button>
-          <button class="pill-btn ghost" style="padding:13px 26px; font-size:13.5px;" onclick="gateGoOnboarding()">Crear / comenzar mi galaxia</button>
+          ${hasLocalAccount ? `<button class="pill-btn ghost" style="padding:13px 26px; font-size:13.5px;" onclick="resumeLocalAccount()">Retomar mi galaxia guardada</button>` : ''}
+          <button class="pill-btn ghost" style="padding:13px 26px; font-size:13.5px;" onclick="gateGoOnboarding()">${hasLocalAccount ? 'Crear una galaxia nueva' : 'Crear / comenzar mi galaxia'}</button>
         </div>
-        <p class="mono" style="font-size:10.5px; color:var(--mute-2); margin-top:24px; max-width:440px; line-height:1.6;">Prototipo local: tu "sesión" vive en este navegador. Iniciar sesión conecta una plataforma real (OAuth) o retoma tu galaxia guardada aquí.</p>
+        <p class="mono" style="font-size:10.5px; color:var(--mute-2); margin-top:24px; max-width:440px; line-height:1.6;">Prototipo local: tu "sesión" vive en este navegador. Iniciar sesión conecta una plataforma real (OAuth) o retoma tu galaxia guardada aquí.${hasLocalAccount?' "Crear una galaxia nueva" reemplaza tu galaxia local actual — usa "Retomar" para conservarla.':''}</p>
       </div>
     </div>
   </div>`;
+}
+function resumeLocalAccount(){
+  switchAccount('local');
+  if(state.onboarded){
+    state.gate = 'app';
+    location.hash = '#/home';
+    render();
+    toast(`Bienvenido de vuelta, ${USER.name.split(' ')[0]}`);
+  } else {
+    toast('No encontramos una galaxia local guardada todavía.');
+    state.gate = 'landing';
+    renderOnboarding();
+  }
 }
 function loginGateHTML(){
   return `
@@ -3441,6 +3795,7 @@ function finishOnboarding(){
       });
     }
     PENDING_FRIENDS = [...(state.ob.friends||[])];
+    if(!ACTIVE_ACCOUNT) ACTIVE_ACCOUNT = 'local';
     state.onboarded = true;
     state.gate = 'app';
     persist();
@@ -3617,7 +3972,9 @@ function clearSearch(){
 }
 
 async function boot(){
-  restore(); // trae la galaxia guardada en este navegador, si existe
+  migrateLegacyStorage(); // adopta datos de la versión anterior (una sola cuenta) si existen
+  const activePtr = localStorage.getItem(ACTIVE_PTR_KEY);
+  if(activePtr) restoreAccount(activePtr); // retoma la cuenta que estaba activa en este navegador
   const qs = new URLSearchParams(window.location.search);
   const isOAuthReturn = qs.has('code') || qs.has('error');
   if(isOAuthReturn){

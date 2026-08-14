@@ -573,7 +573,62 @@ main{flex:1; padding:26px 30px 90px;}
 .event-date-block span{font-family:'JetBrains Mono'; font-size:9px; color:var(--mute); text-transform:uppercase;}
 .event-info{flex:1; min-width:0;}
 .event-info h4{font-family:'Space Grotesk'; font-size:14.5px; margin-bottom:4px;}
-.event-info p{font-size:11.5px; color:var(--mute);}
+.event-info p{font-size:11.5px; color:var(--mute); display:flex; align-items:center; gap:5px;}
+a.event-card:hover{border-color:var(--violet);}
+
+/* Communities: composer de publicaciones */
+.post-composer textarea{width:100%; min-height:60px; resize:vertical; background:var(--panel-2); border:1px solid var(--line); border-radius:12px; padding:11px 13px; color:var(--white); font-family:inherit; font-size:12.5px;}
+.post-composer textarea::placeholder{color:var(--mute-2);}
+.composer-attach-row{display:flex; flex-wrap:wrap; gap:7px; margin-top:12px;}
+.composer-attach-btn{display:inline-flex; align-items:center; gap:6px; cursor:pointer;}
+.composer-attach-btn svg{width:13px; height:13px;}
+.composer-section{margin-top:12px; padding-top:12px; border-top:1px dashed var(--line-soft);}
+.composer-song-picker{max-height:180px; overflow-y:auto; display:flex; flex-direction:column; gap:2px;}
+.composer-pl-item{display:flex; align-items:center; gap:8px; font-size:12px; color:var(--mute); padding:6px 4px; cursor:pointer;}
+.composer-pl-item:hover{color:var(--white);}
+.composer-pl-item input{accent-color:var(--violet);}
+
+/* Communities: tarjetas de publicación (feed vivo) */
+.post-card{margin-bottom:0;}
+.post-head{display:flex; align-items:center; gap:10px; margin-bottom:10px;}
+.post-text{font-size:13px; color:var(--mute); line-height:1.55; margin-bottom:10px; white-space:pre-wrap;}
+.post-photo{width:100%; aspect-ratio:16/9; border-radius:12px; background-size:cover; background-position:center; margin-bottom:10px;}
+.post-video-wrap{margin-bottom:10px;}
+.post-video-wrap video{width:100%; max-height:340px; border-radius:12px; display:block; background:#000;}
+.post-video-unavailable{font-size:11px; color:var(--mute-2); border:1px dashed var(--line-soft); border-radius:12px; padding:16px; text-align:center;}
+.post-playlist{background:var(--panel-2); border:1px solid var(--line-soft); border-radius:12px; padding:12px; margin-bottom:10px;}
+.post-playlist-name{display:flex; align-items:center; gap:6px; font-family:'JetBrains Mono'; font-size:10.5px; color:var(--mute); letter-spacing:.04em; margin-bottom:8px;}
+.post-playlist-name svg{width:14px; height:14px;}
+.post-playlist-items{display:flex; flex-direction:column; gap:6px;}
+.post-memory{display:flex; gap:12px; align-items:center; background:var(--panel-2); border:1px solid var(--line-soft); border-radius:12px; padding:10px 12px; margin-bottom:10px; cursor:default;}
+.post-memory[onclick]{cursor:pointer;}
+.post-context-chips{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;}
+.post-actions{display:flex; align-items:center; gap:8px; padding-top:10px; border-top:1px solid var(--line-soft);}
+.post-action-btn{display:flex; align-items:center; gap:5px; background:transparent; border:none; color:var(--mute); font-family:'JetBrains Mono'; font-size:11px; padding:6px 9px; border-radius:20px; transition:.15s; cursor:pointer;}
+.post-action-btn svg{width:15px; height:15px;}
+.post-action-btn:hover{color:var(--white); background:var(--panel-3);}
+.post-action-btn.on{color:var(--magenta);}
+.post-action-btn.on svg{fill:var(--magenta);}
+
+/* Communities/Events: hilos de comentarios */
+.comments-block{margin-top:12px; padding-top:12px; border-top:1px solid var(--line-soft); display:flex; flex-direction:column; gap:12px;}
+.comment-item{display:flex; gap:9px; align-items:flex-start;}
+.comment-item.reply-item{margin-left:34px; margin-top:8px;}
+.comment-body{flex:1; min-width:0;}
+.comment-meta{display:flex; align-items:baseline; gap:8px;}
+.comment-meta b{font-size:12px;}
+.comment-meta span{font-family:'JetBrains Mono'; font-size:9.5px; color:var(--mute-2);}
+.comment-text{font-size:12.5px; color:var(--mute); line-height:1.5; margin-top:2px;}
+.comment-actions{display:flex; gap:14px; margin-top:5px;}
+.comment-actions button{background:none; border:none; padding:0; font-family:'JetBrains Mono'; font-size:10px; color:var(--mute-2); display:inline-flex; align-items:center; gap:4px; cursor:pointer; transition:.15s;}
+.comment-actions button:hover{color:var(--white);}
+.comment-actions button.on{color:var(--magenta);}
+.comment-actions button svg{width:12px; height:12px;}
+.reply-list{margin-top:4px;}
+.comment-compose{display:flex; gap:8px; align-items:center; margin-top:4px;}
+.comment-compose input{flex:1; background:var(--panel-2); border:1px solid var(--line); border-radius:20px; padding:9px 14px; color:var(--white); font-size:12px; font-family:inherit;}
+.comment-compose input::placeholder{color:var(--mute-2);}
+.comment-compose.reply{margin-left:34px; margin-top:8px;}
 
 /* Profile */
 .profile-hero{display:flex; gap:22px; align-items:center; padding:26px; margin-bottom:20px;}
@@ -666,7 +721,14 @@ const ICONS = {
   shuffle:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h3.5c2 0 3.2 1 4.5 2.8M3 18h3.5c2 0 3.2-1 4.5-2.8"/><path d="M14 6h3.5c2 0 3 .8 3.5 1.6M14 18h3.5c2 0 3-.8 3.5-1.6"/><path d="m18 3.5 3 2.5-3 2.5M18 15.5l3 2.5-3 2.5"/></svg>',
   logout:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>',
   info:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5"/><circle cx="12" cy="8" r="1" fill="currentColor" stroke="none"/></svg>',
+  comment:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5.5h16a1 1 0 0 1 1 1V15a1 1 0 0 1-1 1H9l-4.5 4V16H4a1 1 0 0 1-1-1V6.5a1 1 0 0 1 1-1Z"/></svg>',
+  video:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6.5" width="12" height="11" rx="1.6"/><path d="m15.5 10 5-2.8v9.6l-5-2.8Z"/></svg>',
+  share:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="5.5" r="2.3"/><circle cx="6" cy="12" r="2.3"/><circle cx="18" cy="18.5" r="2.3"/><path d="m8.1 10.8 7.8-4.4M8.1 13.2l7.8 4.4"/></svg>',
 };
+// Ayuda para reutilizar un ícono de 18px a un tamaño más pequeño dentro de
+// botones compactos (chips, acciones de publicación, comentarios) sin
+// duplicar cada SVG.
+function iconSize(svg, px){ return svg.replace('width="18" height="18"', `width="${px}" height="${px}"`); }
 
 // Marca / logo — triángulo geométrico con degradado violeta→magenta→azul
 // (mismo lenguaje cromático en toda la app) + wordmark de dos líneas
@@ -731,29 +793,110 @@ const COMMUNITIES = [
 // comunidades a su estado por defecto al cerrar sesión / cambiar de cuenta.
 const DEFAULT_COMMUNITIES_JOINED = COMMUNITIES.map(c=>({id:c.id, joined:c.joined}));
 
-const COMMUNITY_FEED = {
-  c1:[
-    {user:'Laura Cediel', text:'Alguien más siente que "Silbando" de Bomba Estéreo suena distinto en 2026? Como que aguantó mejor de lo esperado.', time:'hace 2h', song:'Silbando · Bomba Estéreo'},
-    {user:'Mateo Rincón', text:'Subí una playlist con lo que sonaba en Rock al Parque 2016. Nostalgia pura.', time:'hace 5h', song:null},
-    {user:'Valentina Ospina', text:'Tame Impala sigue siendo la puerta de entrada perfecta a todo esto. Change my mind.', time:'hace 1d', song:'Feels Like We Only Go Backwards · Tame Impala'},
-  ],
-  c2:[
-    {user:'Santiago Rojas', text:'El set de Frank T en Baum 2019 sigue sin superarse.', time:'hace 3h', song:null},
-    {user:'Camila Duarte', text:'Buscando gente para listening room de electrónica bogotana este sábado.', time:'hace 8h', song:null},
-  ],
-  c3:[
-    {user:'Alex Martínez', text:'Encontré mi USB de 2009 con 40 canciones piratas. Va nostalgia pura toda la semana.', time:'hace 1h', song:null},
-    {user:'Laura Cediel', text:'MSN Messenger + esta canción de fondo = trauma bonito.', time:'hace 4h', song:'Bad Day · Daniel Powter'},
-  ],
-};
+/* ---------- COMMUNITIES: CONTENIDO SEMILLA ----------
+   Publicaciones de ejemplo de otros miembros simulados, para que cada
+   comunidad se sienta viva desde el primer momento (poder darles like,
+   comentar y responder de inmediato). Las canciones que mencionan estos
+   miembros de ejemplo son canciones reales del mundo (títulos/artistas
+   reales), pero como no vienen de una cuenta de streaming conectada de esa
+   persona simulada, se muestran como mención de texto — nunca como una
+   tarjeta reproducible falsa. Cuando TÚ compartes una canción, playlist o
+   recuerdo desde tu propia galaxia conectada, esa sí queda completamente
+   interactiva (reproducir, cola, convertir en recuerdo), igual que en el
+   resto de la plataforma.
+*/
+const SEED_COMMUNITY_POSTS = [
+  { id:'seed-c1-1', communityId:'c1', author:'Laura Cediel', time:'hace 2h',
+    text:'¿Alguien más siente que "Silbando" de Bomba Estéreo suena distinto en 2026? Como que aguantó mejor de lo esperado.',
+    song:{real:false, title:'Silbando', artist:'Bomba Estéreo'},
+    likes:['Santiago Rojas','Camila Duarte','Valentina Ospina'],
+    comments:[
+      { id:'seed-c1-1-c1', author:'Mateo Rincón', authorIsMe:false, time:'hace 1h', text:'100%. La producción de ese disco no ha envejecido nada mal.', likes:['Laura Cediel'],
+        replies:[ { id:'seed-c1-1-c1-r1', author:'Laura Cediel', authorIsMe:false, time:'hace 40min', text:'Exacto, y en vivo suena todavía mejor.' } ] }
+    ] },
+  { id:'seed-c1-2', communityId:'c1', author:'Mateo Rincón', time:'hace 5h',
+    text:'Subí una playlist con lo que sonaba en Rock al Parque 2016. La volví a escuchar esta semana completa y me devolvió a esa época entera.',
+    playlist:{ name:'Rock al Parque 2016', real:false, items:[
+      {title:'Do I Wanna Know?', artist:'Arctic Monkeys'},
+      {title:'Feels Like We Only Go Backwards', artist:'Tame Impala'},
+      {title:'Reptilia', artist:'The Strokes'},
+    ]},
+    place:'Bogotá', likes:['Valentina Ospina'], comments:[] },
+  { id:'seed-c1-3', communityId:'c1', author:'Valentina Ospina', time:'hace 1d',
+    text:'Encontré la foto de mi USB con toda la discografía de Tame Impala que me pasó una amiga en la universidad. Esa canción todavía me transporta directo a esos días.',
+    photo:{real:false, artClass:'art-5'},
+    song:{real:false, title:'Feels Like We Only Go Backwards', artist:'Tame Impala'},
+    memory:{real:false, date:'Universidad, 2015', place:'Bogotá', people:['Camila Duarte'], tags:['Universidad','Descubrimiento'], note:'La primera vez que escuché ese disco completo, sin saltar ninguna canción.'},
+    likes:['Laura Cediel','Mateo Rincón'],
+    comments:[ { id:'seed-c1-3-c1', author:'Camila Duarte', authorIsMe:false, time:'hace 20h', text:'jajaja yo fui la del USB, qué recuerdos.', likes:[], replies:[] } ] },
+  { id:'seed-c2-1', communityId:'c2', author:'Santiago Rojas', time:'hace 3h',
+    text:'El set de Frank T en Baum 2019 sigue sin superarse. Lo vuelvo a poner cada vez que necesito energía para trabajar.',
+    likes:['Camila Duarte'], comments:[] },
+  { id:'seed-c2-2', communityId:'c2', author:'Camila Duarte', time:'hace 8h',
+    text:'Buscando gente para listening room de electrónica bogotana este sábado. Yo traigo parlante, ustedes traen los discos.',
+    place:'Bogotá', people:['Santiago Rojas'], likes:[],
+    comments:[ { id:'seed-c2-2-c1', author:'Santiago Rojas', authorIsMe:false, time:'hace 6h', text:'Cuenta conmigo, llevo unos vinilos raros.', likes:['Camila Duarte'], replies:[] } ] },
+  { id:'seed-c3-1', communityId:'c3', author:'Laura Cediel', time:'hace 1h',
+    text:'Encontré mi USB de 2009 con 40 canciones piratas. Va nostalgia pura toda la semana.',
+    photo:{real:false, artClass:'art-4'}, likes:['Mateo Rincón'], comments:[] },
+  { id:'seed-c3-2', communityId:'c3', author:'Mateo Rincón', time:'hace 4h',
+    text:'MSN Messenger + esta canción de fondo = trauma bonito.',
+    song:{real:false, title:'Bad Day', artist:'Daniel Powter'},
+    likes:['Laura Cediel'],
+    comments:[ { id:'seed-c3-2-c1', author:'Laura Cediel', authorIsMe:false, time:'hace 3h', text:'jajaja esta canción sonaba en TODOS los mensajes de esa época.', likes:[], replies:[] } ] },
+  { id:'seed-c4-1', communityId:'c4', author:'Santiago Rojas', time:'hace 1d',
+    text:'"Rakata" sigue siendo la prueba de fuego en cualquier fiesta de este círculo.',
+    song:{real:false, title:'Rakata', artist:'Wisin & Yandel'}, likes:['Camila Duarte'], comments:[] },
+  { id:'seed-c5-1', communityId:'c5', author:'Mateo Rincón', time:'hace 2d',
+    text:'Esa banda que te prestó un amigo en CD quemado — para mí fue Sum 41. Todavía tengo el disco rayado en algún cajón.',
+    likes:[], comments:[] },
+  { id:'seed-c6-1', communityId:'c6', author:'Valentina Ospina', time:'hace 3d',
+    text:'Set de ambient para las 3am reales, sin pedir nada a cambio. Lo dejo sonando de fondo cuando no puedo dormir.',
+    likes:['Laura Cediel'], comments:[] },
+];
+// Copia viva editable: aquí se agregan tus publicaciones nuevas y se guardan
+// los likes/comentarios que tú u otros hagan sobre el contenido semilla.
+// Se reinicia a la semilla original al cambiar de cuenta (ver
+// resetAppStateForNewAccount) y se restaura por cuenta desde su cajón real
+// (ver persist()/restoreAccount()).
+function cloneSeedCommunityPosts(){
+  return JSON.parse(JSON.stringify(SEED_COMMUNITY_POSTS)).map(p=>Object.assign({authorIsMe:false, likes:[], comments:[]}, p));
+}
+const COMMUNITY_POSTS = cloneSeedCommunityPosts();
 
 const EVENTS = [
-  {id:'e1', day:'18', month:'JUL', name:'Ares House Bogotá — Noche Indie Latino', place:'Chapinero, Bogotá', going:true},
-  {id:'e2', day:'25', month:'JUL', name:'Listening Room · Electrónica de madrugada', place:'Sesión virtual', going:false},
-  {id:'e3', day:'02', month:'AGO', name:'Drop cultural: Vinilos perdidos de los 2000s', place:'Medellín, El Poblado', going:false},
-  {id:'e4', day:'14', month:'AGO', name:'Ares House Medellín — Escena electrónica colombiana', place:'Medellín', going:false},
+  { id:'e1', day:'18', month:'JUL', hour:'8:00 PM', name:'Ares House Bogotá — Noche Indie Latino', place:'Chapinero, Bogotá', going:true, cover:'art-1',
+    desc:'Una noche dedicada al indie latino de la década 2010–2020: DJ sets, vinilos y una sala de escucha colectiva con los himnos que marcaron esa escena.',
+    communityId:'c1',
+    music:[{title:'Silbando', artist:'Bomba Estéreo'},{title:'Latinoamérica', artist:'Calle 13'}],
+    info:['Entrada libre con registro previo','Zona de food trucks desde las 6:00 PM','Apto para todo público'],
+    attendeesSeed:['Laura Cediel','Mateo Rincón','Valentina Ospina'],
+    comments:[
+      { id:'seed-e1-c1', author:'Laura Cediel', authorIsMe:false, time:'hace 1d', text:'¿Alguien sabe si va a haber vinilos a la venta?', likes:['Mateo Rincón'],
+        replies:[ { id:'seed-e1-c1-r1', author:'Mateo Rincón', authorIsMe:false, time:'hace 20h', text:'Sí, va a haber una mesa de un par de sellos independientes.' } ] },
+    ] },
+  { id:'e2', day:'25', month:'JUL', hour:'9:00 PM', name:'Listening Room · Electrónica de madrugada', place:'Sesión virtual', going:false, cover:'art-8',
+    desc:'Sesión de escucha colectiva en vivo, transmitida en línea — ambient y techno lento para cerrar la semana sin prisa.',
+    communityId:'c6',
+    music:[{title:'Weightless', artist:'Marconi Union'}],
+    info:['El enlace de transmisión se comparte 1 hora antes','Recomendado usar audífonos'],
+    attendeesSeed:['Valentina Ospina'], comments:[] },
+  { id:'e3', day:'02', month:'AGO', hour:'4:00 PM', name:'Drop cultural: Vinilos perdidos de los 2000s', place:'Medellín, El Poblado', going:false, cover:'art-4',
+    desc:'Una selección curada de vinilos difíciles de encontrar de la década 2000s, con historias de cada disco contadas por quienes los coleccionan.',
+    communityId:'c3',
+    music:[{title:'Bad Day', artist:'Daniel Powter'}],
+    info:['Cupo limitado a 40 personas','Se puede comprar en el lugar'],
+    attendeesSeed:['Laura Cediel'],
+    comments:[ { id:'seed-e3-c1', author:'Camila Duarte', authorIsMe:false, time:'hace 2d', text:'¿Este es presencial solamente o también hay parte virtual?', likes:[], replies:[] } ] },
+  { id:'e4', day:'14', month:'AGO', hour:'7:30 PM', name:'Ares House Medellín — Escena electrónica colombiana', place:'Medellín', going:false, cover:'art-6',
+    desc:'Un recorrido en vivo por la escena electrónica colombiana actual, con DJs locales presentando su propio trabajo.',
+    communityId:'c2',
+    music:[],
+    info:['Boletas limitadas','El line-up se anuncia la semana previa'],
+    attendeesSeed:['Santiago Rojas','Camila Duarte'], comments:[] },
 ];
 const DEFAULT_EVENTS_GOING = EVENTS.map(e=>({id:e.id, going:e.going}));
+const DEFAULT_EVENT_COMMENTS = JSON.parse(JSON.stringify(EVENTS.map(e=>({id:e.id, comments:e.comments}))));
 
 /* ===== ARES GALAXY — CONNECTED PLATFORMS =====
    Ares Galaxy no mantiene una biblioteca musical propia: se conecta a las
@@ -828,7 +971,12 @@ function resetAppStateForNewAccount(){
   SONGS.length = 0;
   MEMORIES.length = 0;
   COMMUNITIES.forEach(c=>{ const d = DEFAULT_COMMUNITIES_JOINED.find(x=>x.id===c.id); c.joined = d ? d.joined : false; });
-  EVENTS.forEach(e=>{ const d = DEFAULT_EVENTS_GOING.find(x=>x.id===e.id); e.going = d ? d.going : false; });
+  COMMUNITY_POSTS.length = 0;
+  cloneSeedCommunityPosts().forEach(p=>COMMUNITY_POSTS.push(p));
+  EVENTS.forEach(e=>{
+    const d = DEFAULT_EVENTS_GOING.find(x=>x.id===e.id); e.going = d ? d.going : false;
+    const dc = DEFAULT_EVENT_COMMENTS.find(x=>x.id===e.id); e.comments = dc ? JSON.parse(JSON.stringify(dc.comments)) : [];
+  });
   Object.keys(CONNECTIONS).forEach(k=>{ CONNECTIONS[k].connected=false; CONNECTIONS[k].profile=null; CONNECTIONS[k].lastSync=null; CONNECTIONS[k].counts={}; });
   PENDING_FRIENDS = [];
   state.onboarded = false;
@@ -848,6 +996,8 @@ function resetAppStateForNewAccount(){
   state.galaxyFocus = null;
   state.drawer = null;
   state.modal = null;
+  if(state.composer && state.composer.videoUrl){ try{ URL.revokeObjectURL(state.composer.videoUrl); }catch(_){} }
+  state.composer = { photoDataUrl:null, videoUrl:null, videoName:null };
 }
 function persist(){
   if(!ACTIVE_ACCOUNT) ACTIVE_ACCOUNT = 'local';
@@ -855,7 +1005,9 @@ function persist(){
     localStorage.setItem(accountKey(ACTIVE_ACCOUNT), JSON.stringify({
       USER, SONGS, MEMORIES,
       communitiesJoined: COMMUNITIES.map(c=>({id:c.id, joined:c.joined})),
+      communityPosts: COMMUNITY_POSTS,
       eventsGoing: EVENTS.map(e=>({id:e.id, going:e.going})),
+      eventComments: EVENTS.map(e=>({id:e.id, comments:e.comments})),
       onboarded: state.onboarded,
       connections: CONNECTIONS,
       pendingFriends: PENDING_FRIENDS,
@@ -879,7 +1031,9 @@ function restoreAccount(id){
     if(Array.isArray(data.SONGS)) data.SONGS.forEach(s=>SONGS.push(s));
     if(Array.isArray(data.MEMORIES)) data.MEMORIES.forEach(m=>MEMORIES.push(m));
     if(Array.isArray(data.communitiesJoined)) data.communitiesJoined.forEach(c=>{ const m = COMMUNITIES.find(x=>x.id===c.id); if(m) m.joined = c.joined; });
+    if(Array.isArray(data.communityPosts)){ COMMUNITY_POSTS.length = 0; data.communityPosts.forEach(p=>COMMUNITY_POSTS.push(p)); }
     if(Array.isArray(data.eventsGoing)) data.eventsGoing.forEach(e=>{ const m = EVENTS.find(x=>x.id===e.id); if(m) m.going = e.going; });
+    if(Array.isArray(data.eventComments)) data.eventComments.forEach(ec=>{ const m = EVENTS.find(x=>x.id===ec.id); if(m && Array.isArray(ec.comments)) m.comments = ec.comments; });
     if(data.connections) Object.keys(CONNECTIONS).forEach(k=>{ if(data.connections[k]) Object.assign(CONNECTIONS[k], data.connections[k]); });
     if(Array.isArray(data.pendingFriends)) PENDING_FRIENDS = data.pendingFriends;
     state.onboarded = !!data.onboarded;
@@ -2171,6 +2325,7 @@ const state = {
   expandedInfoOpen: false, // panel de info/etiquetas dentro del reproductor expandido
   discover: { loading:false, error:null, items:[], loadedFor:null }, // feed real de Discover
   galaxyFocus: null, // {type:'artist', id, name, items:[]} — universo explorado dentro de la galaxia
+  composer: { photoDataUrl:null, videoUrl:null, videoName:null }, // borrador del compositor de publicaciones de Communities
 };
 
 function toast(msg){
@@ -2515,7 +2670,7 @@ function shellHTML(){
     ${logoLockup()}
     <nav class="nav-group">
       ${NAV_ITEMS.map(n=>`
-        <a href="#/${n.id}" class="nav-item ${(state.route===n.id || (n.id==='communities' && state.route.startsWith('community/')))?'active':''}">
+        <a href="#/${n.id}" class="nav-item ${(state.route===n.id || (n.id==='communities' && state.route.startsWith('community/')) || (n.id==='events' && state.route.startsWith('event/')))?'active':''}">
           ${ICONS[n.icon]}<span>${n.label}</span>
           ${n.badge && n.badge() ? `<span class="badge">${n.badge()}</span>` : ''}
         </a>`).join('')}
@@ -3001,7 +3156,7 @@ function viewCommunities(){
 function viewCommunityDetail(id){
   const c = COMMUNITIES.find(x=>x.id===id);
   if(!c) return `<div class="empty-state"><h4>Comunidad no encontrada</h4></div>`;
-  const feed = COMMUNITY_FEED[id] || [];
+  const posts = COMMUNITY_POSTS.filter(p=>p.communityId===id).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
   return `
   <div class="view-enter">
     <a href="#/communities" class="link-more" style="margin-bottom:16px; display:inline-flex;">← Todas las comunidades</a>
@@ -3019,21 +3174,13 @@ function viewCommunityDetail(id){
     <div class="grid g2" style="grid-template-columns:2fr 1fr; align-items:flex-start;">
       <div>
         <div class="section-title" style="margin-bottom:14px;"><span class="dot"></span>Conversación</div>
-        <div style="display:flex; flex-direction:column; gap:12px;">
-          ${feed.length ? feed.map(f=>{
-            const displayName = f.user==='Alex Martínez' ? USER.name : f.user;
-            const avatarColor = f.user==='Alex Martínez' ? 'linear-gradient(135deg,var(--violet),var(--magenta))' : (FRIENDS.find(x=>x.name===f.user)||{color:'var(--violet)'}).color;
-            return `
-            <div class="panel panel-pad">
-              <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px;">
-                <div class="avatar" style="width:28px;height:28px;font-size:10px;background:${avatarColor}">${getInitials(displayName)}</div>
-                <b style="font-size:12.5px;">${displayName}</b>
-                <span style="font-family:'JetBrains Mono'; font-size:10px; color:var(--mute-2); margin-left:auto;">${f.time}</span>
-              </div>
-              <p style="font-size:13px; color:var(--mute); line-height:1.55;">${f.text}</p>
-              ${f.song ? `<div class="chip" style="margin-top:10px;">♫ ${f.song}</div>` : ''}
-            </div>`;
-          }).join('') : `<div class="empty-state">${ICONS.community}<h4>Sin actividad aún</h4><p>Sé la primera persona en compartir algo aquí.</p></div>`}
+        ${c.joined ? communityComposerHTML(c.id) : `
+        <div class="panel panel-pad" style="text-align:center; margin-bottom:16px;">
+          <p class="page-sub" style="margin:0 0 12px;">Únete a esta comunidad para publicar, comentar y dar like.</p>
+          <button class="pill-btn" onclick="toggleJoin('${c.id}')">Unirme a ${c.name}</button>
+        </div>`}
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          ${posts.length ? posts.map(postCard).join('') : `<div class="empty-state">${ICONS.community}<h4>Sin actividad aún</h4><p>Sé la primera persona en compartir algo aquí.</p></div>`}
         </div>
       </div>
       <div class="panel panel-pad">
@@ -3049,6 +3196,391 @@ function toggleJoin(id){
   const c = COMMUNITIES.find(x=>x.id===id);
   c.joined = !c.joined;
   toast(c.joined ? `Te uniste a ${c.name}` : `Saliste de ${c.name}`);
+  persist();
+  renderView();
+}
+
+/* ---------- COMMUNITIES: COMPOSITOR DE PUBLICACIONES ----------
+   Un único formulario flexible (no pestañas rígidas) que permite combinar
+   texto + foto + video + canción real + playlist real + un recuerdo real
+   guardado + contexto (lugar/personas/etiquetas), tal como se pidió:
+   "Foto + canción + recuerdo + personas + lugar + comentario", o
+   "Playlist + historia + comentario", o simplemente "Canción + comentario".
+   Toda canción/playlist que TÚ compartas aquí viene de tu propia galaxia
+   real (SONGS/MEMORIES) y queda completamente interactiva (reproducir,
+   cola, convertir en recuerdo) como en el resto de la plataforma.
+*/
+function communityComposerHTML(communityId){
+  return `
+  <div class="panel panel-pad post-composer" style="margin-bottom:16px;">
+    <div style="display:flex; gap:10px; align-items:flex-start;">
+      <div class="avatar" style="width:34px;height:34px;font-size:12px;background:linear-gradient(135deg,var(--violet),var(--magenta)); flex:none;">${getInitials(USER.name)}</div>
+      <textarea id="composer-text" placeholder="Comparte algo con la comunidad — una historia, una canción, una foto…"></textarea>
+    </div>
+    <div class="composer-attach-row">
+      <button type="button" class="tag-opt composer-attach-btn" data-target="composer-sec-photo" onclick="toggleComposerSection(this)">${iconSize(ICONS.camera,13)} Foto</button>
+      <button type="button" class="tag-opt composer-attach-btn" data-target="composer-sec-video" onclick="toggleComposerSection(this)">${iconSize(ICONS.video,13)} Video</button>
+      <button type="button" class="tag-opt composer-attach-btn" data-target="composer-sec-song" onclick="toggleComposerSection(this)">♫ Canción</button>
+      <button type="button" class="tag-opt composer-attach-btn" data-target="composer-sec-playlist" onclick="toggleComposerSection(this)">${iconSize(ICONS.queue,13)} Playlist</button>
+      <button type="button" class="tag-opt composer-attach-btn" data-target="composer-sec-memory" onclick="toggleComposerSection(this)">${iconSize(ICONS.heart,13)} Recuerdo</button>
+      <button type="button" class="tag-opt composer-attach-btn" data-target="composer-sec-context" onclick="toggleComposerSection(this)">${iconSize(ICONS.pin,13)} Contexto</button>
+    </div>
+
+    <div class="composer-section" id="composer-sec-photo" style="display:none;">
+      <input type="file" id="composer-photo-input" accept="image/*" class="hidden" onchange="handleComposerPhoto(event)"/>
+      <div class="upload-box" id="composer-photo-box" style="cursor:pointer;" onclick="document.getElementById('composer-photo-input').click()">${ICONS.camera}<div>Toca para elegir una foto</div></div>
+    </div>
+
+    <div class="composer-section" id="composer-sec-video" style="display:none;">
+      <input type="file" id="composer-video-input" accept="video/*" class="hidden" onchange="handleComposerVideo(event)"/>
+      <div class="upload-box" id="composer-video-box" style="cursor:pointer;" onclick="document.getElementById('composer-video-input').click()">${ICONS.video}<div>Toca para elegir un video</div></div>
+      <p style="font-size:10.5px; color:var(--mute-2); margin-top:6px;">El video se previsualiza solo en esta sesión de tu navegador — Ares Galaxy no sube archivos de video a ningún servidor.</p>
+    </div>
+
+    <div class="composer-section" id="composer-sec-song" style="display:none;">
+      ${SONGS.length ? `
+      <select id="composer-song-select">
+        <option value="">— Elige una canción real de tu galaxia —</option>
+        ${SONGS.map(s=>`<option value="${s.id}">${s.title} — ${s.artist}</option>`).join('')}
+      </select>` : `<p class="page-sub" style="margin:0;">Aún no tienes canciones reales conectadas — conecta Spotify o YouTube desde Conexiones para poder compartirlas aquí.</p>`}
+    </div>
+
+    <div class="composer-section" id="composer-sec-playlist" style="display:none;">
+      ${SONGS.length ? `
+      <div class="field" style="margin-bottom:10px;"><input type="text" id="composer-pl-name" placeholder="Nombre de la playlist"/></div>
+      <div class="composer-song-picker">${SONGS.map(s=>`<label class="composer-pl-item"><input type="checkbox" value="${s.id}" class="composer-pl-check"/> <span>${s.title} — ${s.artist}</span></label>`).join('')}</div>
+      ` : `<p class="page-sub" style="margin:0;">Aún no tienes canciones reales conectadas para armar una playlist.</p>`}
+    </div>
+
+    <div class="composer-section" id="composer-sec-memory" style="display:none;">
+      ${MEMORIES.length ? `
+      <select id="composer-memory-select">
+        <option value="">— Elige un recuerdo guardado —</option>
+        ${MEMORIES.map(m=>`<option value="${m.id}">${m.song} · ${m.date}</option>`).join('')}
+      </select>` : `<p class="page-sub" style="margin:0;">Aún no tienes recuerdos guardados — convierte una canción en recuerdo desde tu Archivo para poder compartirlo aquí.</p>`}
+    </div>
+
+    <div class="composer-section" id="composer-sec-context" style="display:none;">
+      <div class="field-row">
+        <div class="field" style="margin-bottom:0;"><input type="text" id="composer-place" placeholder="Lugar"/></div>
+        <div class="field" style="margin-bottom:0;"><input type="text" id="composer-people" placeholder="Personas (separadas por coma)"/></div>
+      </div>
+      <div class="field" style="margin-bottom:0; margin-top:10px;"><input type="text" id="composer-tags" placeholder="Etiquetas (separadas por coma)"/></div>
+    </div>
+
+    <button class="pill-btn" style="width:100%; justify-content:center; margin-top:14px;" onclick="submitCommunityPost('${communityId}')">${ICONS.plus} Publicar</button>
+  </div>`;
+}
+function toggleComposerSection(btn){
+  const el = document.getElementById(btn.dataset.target);
+  if(!el) return;
+  const opening = el.style.display === 'none';
+  el.style.display = opening ? 'block' : 'none';
+  btn.classList.toggle('on', opening);
+}
+async function handleComposerPhoto(evt){
+  const file = evt.target.files && evt.target.files[0];
+  if(!file) return;
+  const box = document.getElementById('composer-photo-box');
+  if(box) box.innerHTML = '<div style="font-size:11px;">Cargando imagen…</div>';
+  try{ state.composer.photoDataUrl = await resizeImageFile(file, 900, 0.82); }
+  catch(e){ toast('No pudimos leer esa imagen — prueba con otro archivo'); }
+  renderComposerPhotoBox();
+}
+function renderComposerPhotoBox(){
+  const box = document.getElementById('composer-photo-box');
+  if(!box) return;
+  const url = state.composer.photoDataUrl;
+  if(url){
+    box.style.cssText = `cursor:pointer; position:relative; padding:0; overflow:hidden; height:150px; background-image:url('${url}'); background-size:cover; background-position:center;`;
+    box.innerHTML = `<button type="button" class="mini-btn" style="position:absolute; top:8px; right:8px; background:rgba(5,3,8,.6);" onclick="removeComposerPhoto(event)" title="Quitar foto">${ICONS.close}</button>`;
+  } else {
+    box.style.cssText = 'cursor:pointer;';
+    box.innerHTML = `${ICONS.camera}<div>Toca para elegir una foto</div>`;
+  }
+}
+function removeComposerPhoto(evt){
+  if(evt) evt.stopPropagation();
+  state.composer.photoDataUrl = null;
+  const input = document.getElementById('composer-photo-input');
+  if(input) input.value = '';
+  renderComposerPhotoBox();
+}
+function handleComposerVideo(evt){
+  const file = evt.target.files && evt.target.files[0];
+  if(!file) return;
+  if(!file.type.startsWith('video/')){ toast('Elige un archivo de video válido'); return; }
+  if(state.composer.videoUrl) URL.revokeObjectURL(state.composer.videoUrl);
+  state.composer.videoUrl = URL.createObjectURL(file);
+  state.composer.videoName = file.name;
+  renderComposerVideoBox();
+}
+function renderComposerVideoBox(){
+  const box = document.getElementById('composer-video-box');
+  if(!box) return;
+  const url = state.composer.videoUrl;
+  if(url){
+    box.style.cssText = 'cursor:default; padding:0; overflow:hidden;';
+    box.innerHTML = `<video src="${url}" controls style="width:100%; max-height:220px; display:block; border-radius:12px;"></video><button type="button" class="mini-btn" style="margin-top:8px;" onclick="removeComposerVideo(event)">${ICONS.close} Quitar video</button>`;
+  } else {
+    box.style.cssText = 'cursor:pointer;';
+    box.innerHTML = `${ICONS.video}<div>Toca para elegir un video</div>`;
+  }
+}
+function removeComposerVideo(evt){
+  if(evt) evt.stopPropagation();
+  if(state.composer.videoUrl) URL.revokeObjectURL(state.composer.videoUrl);
+  state.composer.videoUrl = null; state.composer.videoName = null;
+  const input = document.getElementById('composer-video-input');
+  if(input) input.value = '';
+  renderComposerVideoBox();
+}
+function submitCommunityPost(communityId){
+  const textEl = document.getElementById('composer-text');
+  const text = textEl ? textEl.value.trim() : '';
+  const photoDataUrl = state.composer.photoDataUrl;
+  const videoUrl = state.composer.videoUrl, videoName = state.composer.videoName;
+  const songSel = document.getElementById('composer-song-select');
+  const songId = songSel && songSel.value ? songSel.value : null;
+  const plNameEl = document.getElementById('composer-pl-name');
+  const plChecks = [...document.querySelectorAll('.composer-pl-check:checked')].map(cb=>cb.value);
+  const memSel = document.getElementById('composer-memory-select');
+  const memoryId = memSel && memSel.value ? memSel.value : null;
+  const place = (document.getElementById('composer-place')||{}).value || '';
+  const peopleRaw = (document.getElementById('composer-people')||{}).value || '';
+  const tagsRaw = (document.getElementById('composer-tags')||{}).value || '';
+  const people = peopleRaw.split(',').map(s=>s.trim()).filter(Boolean);
+  const tags = tagsRaw.split(',').map(s=>s.trim()).filter(Boolean);
+
+  if(!(text || photoDataUrl || videoUrl || songId || plChecks.length || memoryId)){
+    toast('Escribe algo o adjunta contenido para publicar');
+    return;
+  }
+
+  const post = {
+    id:'up-'+Date.now(), communityId,
+    author: USER.name, authorIsMe:true, time:'justo ahora', createdAt: Date.now(),
+    text: text || null,
+    photo: photoDataUrl ? { real:true, dataUrl: photoDataUrl } : null,
+    video: videoUrl ? { real:true, url: videoUrl, name: videoName } : null,
+    song: songId ? { real:true, id: songId } : null,
+    playlist: plChecks.length ? { name: (plNameEl && plNameEl.value.trim()) || 'Playlist sin nombre', real:true, songIds: plChecks } : null,
+    memory: memoryId ? { real:true, id: memoryId } : null,
+    place: place || null, people, tags,
+    likes: [], comments: [],
+  };
+  COMMUNITY_POSTS.unshift(post);
+  state.composer = { photoDataUrl:null, videoUrl:null, videoName:null };
+  persist();
+  toast('Publicado en la comunidad');
+  renderView();
+}
+
+/* ---------- COMMUNITIES: TARJETA DE PUBLICACIÓN ---------- */
+function postCard(post){
+  const displayName = post.authorIsMe ? USER.name : post.author;
+  const avatarColor = post.authorIsMe ? 'linear-gradient(135deg,var(--violet),var(--magenta))' : (FRIENDS.find(x=>x.name===post.author)||{color:'var(--violet)'}).color;
+  const liked = (post.likes||[]).includes(USER.name);
+
+  let mediaHTML = '';
+  if(post.photo){
+    mediaHTML += post.photo.real
+      ? `<div class="post-photo" style="background-image:url('${post.photo.dataUrl}');"></div>`
+      : `<div class="post-photo ${post.photo.artClass||'art-1'}"></div>`;
+  }
+  if(post.video){
+    mediaHTML += `<div class="post-video-wrap"><video src="${post.video.url}" controls preload="metadata" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'post-video-unavailable',textContent:'Video no disponible en esta sesión (vista previa local, no se guarda en un servidor).'}))"></video></div>`;
+  }
+  let songHTML = '';
+  if(post.song){
+    if(post.song.real){
+      const s = findSong(post.song.id);
+      songHTML = s ? songRow(s, {ctxIds:[post.song.id]}) : '';
+    } else {
+      songHTML = `<div class="chip" style="margin-top:2px; margin-bottom:10px; display:inline-flex; gap:6px; padding:8px 12px;">♫ ${post.song.title} · ${post.song.artist}</div>`;
+    }
+  }
+  let playlistHTML = '';
+  if(post.playlist){
+    const items = post.playlist.real
+      ? (post.playlist.songIds||[]).map(id=>findSong(id)).filter(Boolean).map(s=>songRow(s,{ctxIds:post.playlist.songIds}))
+      : (post.playlist.items||[]).map(it=>`<div class="chip" style="margin:0 6px 6px 0; display:inline-flex;">♫ ${it.title} · ${it.artist}</div>`);
+    playlistHTML = `<div class="post-playlist">
+      <div class="post-playlist-name">${iconSize(ICONS.queue,14)} ${post.playlist.name}</div>
+      <div class="post-playlist-items">${items.join('')}</div>
+    </div>`;
+  }
+  let memoryHTML = '';
+  if(post.memory){
+    if(post.memory.real){
+      const m = MEMORIES.find(x=>x.id===post.memory.id);
+      memoryHTML = m ? `
+      <div class="post-memory" onclick="openMemoryDrawer('${m.id}')">
+        <div class="song-art ${memoryArtClass(m)}" style="width:56px;height:56px;margin:0;border-radius:10px;flex:none; ${memoryArtStyle(m)}"></div>
+        <div style="min-width:0;"><b style="font-size:12.5px;">${m.song}</b><div style="font-size:10.5px; color:var(--mute);">${m.date} · ${m.place}</div></div>
+      </div>` : '';
+    } else {
+      memoryHTML = `
+      <div class="post-memory">
+        <div class="song-art art-5" style="width:56px;height:56px;margin:0;border-radius:10px;flex:none;"></div>
+        <div style="min-width:0;"><b style="font-size:12.5px;">${post.memory.date||'Un recuerdo'}</b><div style="font-size:10.5px; color:var(--mute);">${[post.memory.place, (post.memory.people||[]).join(', ')].filter(Boolean).join(' · ')}</div>${post.memory.note?`<p style="font-size:11.5px; color:var(--mute); font-style:italic; margin-top:6px;">“${post.memory.note}”</p>`:''}</div>
+      </div>`;
+    }
+  }
+  const contextChips = [];
+  if(post.place) contextChips.push(`${iconSize(ICONS.pin,11)} ${post.place}`);
+  if(post.people && post.people.length) contextChips.push(post.people.join(', '));
+  if(post.tags && post.tags.length) post.tags.forEach(t=>contextChips.push(t));
+
+  return `
+  <div class="post-card panel panel-pad">
+    <div class="post-head">
+      <div class="avatar" style="background:${avatarColor}">${getInitials(displayName)}</div>
+      <div style="flex:1; min-width:0;">
+        <b style="font-size:13px;">${displayName}</b>
+        <div style="font-family:'JetBrains Mono'; font-size:10px; color:var(--mute-2);">${post.time}</div>
+      </div>
+    </div>
+    ${post.text ? `<p class="post-text">${post.text}</p>` : ''}
+    ${mediaHTML}
+    ${songHTML}
+    ${playlistHTML}
+    ${memoryHTML}
+    ${contextChips.length ? `<div class="post-context-chips">${contextChips.map(ch=>`<span class="chip">${ch}</span>`).join('')}</div>` : ''}
+    <div class="post-actions">
+      <button class="post-action-btn ${liked?'on':''}" onclick="togglePostLike('${post.id}')">${iconSize(ICONS.heart,15)}${(post.likes||[]).length?' '+post.likes.length:''}</button>
+      <button class="post-action-btn" onclick="focusEl('new-comment-post-${post.id}')">${iconSize(ICONS.comment,15)}${(post.comments||[]).length?' '+post.comments.length:''}</button>
+      <button class="post-action-btn" onclick="sharePost('${post.id}')">${iconSize(ICONS.share,15)}</button>
+    </div>
+    <div class="post-comments">
+      ${commentsBlockHTML('post', post.id, post.comments)}
+    </div>
+  </div>`;
+}
+function focusEl(id){
+  const el = document.getElementById(id);
+  if(el){ el.scrollIntoView({behavior:'smooth', block:'center'}); el.focus(); }
+}
+function togglePostLike(postId){
+  const post = COMMUNITY_POSTS.find(p=>p.id===postId);
+  if(!post) return;
+  post.likes = post.likes || [];
+  const i = post.likes.indexOf(USER.name);
+  if(i>=0) post.likes.splice(i,1); else post.likes.push(USER.name);
+  persist();
+  renderView();
+}
+function sharePost(postId){
+  const post = COMMUNITY_POSTS.find(p=>p.id===postId);
+  if(!post) return;
+  const communityName = (COMMUNITIES.find(c=>c.id===post.communityId)||{}).name || 'Ares Galaxy';
+  const displayName = post.authorIsMe ? USER.name : post.author;
+  let summary = `${displayName} en ${communityName}`;
+  if(post.text) summary += `: "${post.text}"`;
+  if(post.song) summary += ` — ♫ ${post.song.real ? (findSong(post.song.id)||{}).title : post.song.title} · ${post.song.real ? (findSong(post.song.id)||{}).artist : post.song.artist}`;
+  const shareUrl = location.origin + location.pathname + '#/community/' + post.communityId;
+  const shareText = summary + '\n' + shareUrl;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(shareText)
+      .then(()=> toast('Copiado al portapapeles — listo para compartir'))
+      .catch(()=> toast('No se pudo copiar automáticamente. Enlace: '+shareUrl));
+  } else {
+    toast('Enlace: '+shareUrl);
+  }
+}
+
+/* ---------- COMMUNITIES + EVENTS: HILOS DE COMENTARIOS (genérico) ----------
+   Un mismo sistema de comentarios/respuestas/likes se reutiliza para
+   publicaciones de comunidad (type='post') y para eventos (type='event'),
+   evitando duplicar la lógica de interacción social.
+*/
+function findThreadOwner(type, id){
+  return type==='post' ? COMMUNITY_POSTS.find(p=>p.id===id) : EVENTS.find(e=>e.id===id);
+}
+function commentsBlockHTML(type, id, comments){
+  comments = comments || [];
+  return `
+  <div class="comments-block">
+    ${comments.map(c=>commentItemHTML(type,id,c)).join('')}
+    <div class="comment-compose">
+      <input type="text" id="new-comment-${type}-${id}" placeholder="Escribe un comentario…" maxlength="400" onkeydown="if(event.key==='Enter'){event.preventDefault(); submitComment('${type}','${id}');}"/>
+      <button class="icon-btn" title="Comentar" onclick="submitComment('${type}','${id}')">${ICONS.send}</button>
+    </div>
+  </div>`;
+}
+function commentItemHTML(type, id, c){
+  const liked = (c.likes||[]).includes(USER.name);
+  const displayName = c.authorIsMe ? USER.name : c.author;
+  const avatarColor = c.authorIsMe ? 'linear-gradient(135deg,var(--violet),var(--magenta))' : (FRIENDS.find(x=>x.name===c.author)||{color:'var(--violet)'}).color;
+  return `
+  <div class="comment-item">
+    <div class="avatar" style="width:26px;height:26px;font-size:9.5px;background:${avatarColor}">${getInitials(displayName)}</div>
+    <div class="comment-body">
+      <div class="comment-meta"><b>${displayName}</b><span>${c.time}</span></div>
+      <p class="comment-text">${c.text}</p>
+      <div class="comment-actions">
+        <button class="${liked?'on':''}" onclick="toggleCommentLike('${type}','${id}','${c.id}')">${iconSize(ICONS.heart,12)}${(c.likes||[]).length ? ' '+c.likes.length : ''}</button>
+        <button onclick="toggleReplyBox('${c.id}')">Responder</button>
+      </div>
+      ${(c.replies||[]).length ? `<div class="reply-list">${c.replies.map(replyItemHTML).join('')}</div>` : ''}
+      <div class="comment-compose reply" id="reply-box-${c.id}" style="display:none;">
+        <input type="text" id="reply-input-${c.id}" placeholder="Responder a ${displayName}…" maxlength="300" onkeydown="if(event.key==='Enter'){event.preventDefault(); submitReply('${type}','${id}','${c.id}');}"/>
+        <button class="icon-btn" title="Responder" onclick="submitReply('${type}','${id}','${c.id}')">${ICONS.send}</button>
+      </div>
+    </div>
+  </div>`;
+}
+function replyItemHTML(r){
+  const displayName = r.authorIsMe ? USER.name : r.author;
+  const avatarColor = r.authorIsMe ? 'linear-gradient(135deg,var(--violet),var(--magenta))' : (FRIENDS.find(x=>x.name===r.author)||{color:'var(--violet)'}).color;
+  return `
+  <div class="comment-item reply-item">
+    <div class="avatar" style="width:22px;height:22px;font-size:8.5px;background:${avatarColor}">${getInitials(displayName)}</div>
+    <div class="comment-body">
+      <div class="comment-meta"><b>${displayName}</b><span>${r.time}</span></div>
+      <p class="comment-text">${r.text}</p>
+    </div>
+  </div>`;
+}
+function toggleReplyBox(commentId){
+  const box = document.getElementById('reply-box-'+commentId);
+  if(!box) return;
+  const willOpen = box.style.display==='none';
+  box.style.display = willOpen ? 'flex' : 'none';
+  if(willOpen){ const inp = document.getElementById('reply-input-'+commentId); if(inp) inp.focus(); }
+}
+function submitComment(type, id){
+  const owner = findThreadOwner(type, id);
+  if(!owner) return;
+  const input = document.getElementById(`new-comment-${type}-${id}`);
+  const text = input ? input.value.trim() : '';
+  if(!text){ toast('Escribe algo antes de comentar'); return; }
+  owner.comments = owner.comments || [];
+  owner.comments.push({ id:'cm-'+Date.now(), author:USER.name, authorIsMe:true, time:'justo ahora', text, likes:[], replies:[] });
+  persist();
+  renderView();
+  toast('Comentario publicado');
+}
+function submitReply(type, id, commentId){
+  const owner = findThreadOwner(type, id);
+  const c = owner && (owner.comments||[]).find(x=>x.id===commentId);
+  if(!c) return;
+  const input = document.getElementById('reply-input-'+commentId);
+  const text = input ? input.value.trim() : '';
+  if(!text){ toast('Escribe algo antes de responder'); return; }
+  c.replies = c.replies || [];
+  c.replies.push({ id:'rp-'+Date.now(), author:USER.name, authorIsMe:true, time:'justo ahora', text });
+  persist();
+  renderView();
+  toast('Respuesta enviada');
+}
+function toggleCommentLike(type, id, commentId){
+  const owner = findThreadOwner(type, id);
+  const c = owner && (owner.comments||[]).find(x=>x.id===commentId);
+  if(!c) return;
+  c.likes = c.likes || [];
+  const i = c.likes.indexOf(USER.name);
+  if(i>=0) c.likes.splice(i,1); else c.likes.push(USER.name);
   persist();
   renderView();
 }
@@ -3095,11 +3627,11 @@ function viewEvents(){
     </div>
     <div style="display:flex; flex-direction:column; gap:12px;">
       ${EVENTS.map(e=>`
-      <div class="event-card">
+      <a href="#/event/${e.id}" class="event-card">
         <div class="event-date-block"><b>${e.day}</b><span>${e.month}</span></div>
-        <div class="event-info"><h4>${e.name}</h4><p>${ICONS.pin.replace('width="18" height="18"','width="11" height="11"')} ${e.place}</p></div>
-        <button class="pill-btn ${e.going?'ghost':''}" onclick="toggleGoing('${e.id}')">${e.going?'Asistiré ✓':'Voy a ir'}</button>
-      </div>`).join('')}
+        <div class="event-info"><h4>${e.name}</h4><p>${iconSize(ICONS.pin,11)} ${e.place}${e.hour ? ' · '+e.hour : ''}</p></div>
+        <button class="pill-btn ${e.going?'ghost':''}" onclick="event.preventDefault(); event.stopPropagation(); toggleGoing('${e.id}')">${e.going?'Asistiré ✓':'Voy a ir'}</button>
+      </a>`).join('')}
     </div>
   </div>`;
 }
@@ -3109,6 +3641,63 @@ function toggleGoing(id){
   toast(e.going ? `Confirmado: ${e.name}` : 'Cancelaste tu asistencia');
   persist();
   renderView();
+}
+
+/* ---------- VIEW: EVENT DETAIL ---------- */
+function viewEventDetail(id){
+  const e = EVENTS.find(x=>x.id===id);
+  if(!e) return `<div class="empty-state"><h4>Evento no encontrado</h4></div>`;
+  const community = e.communityId ? COMMUNITIES.find(c=>c.id===e.communityId) : null;
+  const attendees = [...(e.attendeesSeed||[])];
+  if(e.going && !attendees.includes(USER.name)) attendees.push(USER.name);
+  const musicHTML = (e.music && e.music.length)
+    ? e.music.map(m=>`<div class="chip" style="display:inline-flex; gap:6px; padding:8px 12px; margin:0 8px 8px 0;">♫ ${m.title} · ${m.artist}</div>`).join('')
+    : `<p style="font-size:11.5px; color:var(--mute-2);">Sin música asociada todavía.</p>`;
+  return `
+  <div class="view-enter">
+    <a href="#/events" class="link-more" style="margin-bottom:16px; display:inline-flex;">← Todos los eventos</a>
+    <div class="panel" style="overflow:hidden; margin-bottom:22px;">
+      <div class="comm-cover ${e.cover||'art-1'}" style="height:170px; display:flex; align-items:flex-end; padding:18px;">
+        <div class="event-date-block" style="background:rgba(5,3,8,.55); backdrop-filter:blur(6px);"><b>${e.day}</b><span>${e.month}</span></div>
+      </div>
+      <div class="panel-pad" style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-top:-10px;">
+        <div>
+          <h2 class="page-title" style="font-size:22px;">${e.name}</h2>
+          <div class="comm-stats" style="margin-top:10px; flex-wrap:wrap;">
+            <span>${iconSize(ICONS.clock,13)} ${e.hour||'Hora por confirmar'}</span><span>·</span>
+            <span>${iconSize(ICONS.pin,13)} ${e.place}</span>
+            ${community ? `<span>·</span><span><a href="#/community/${community.id}" class="link-more" style="display:inline-flex;">${community.name}</a></span>` : ''}
+          </div>
+        </div>
+        <button class="pill-btn ${e.going?'ghost':''}" onclick="toggleGoing('${e.id}')">${e.going?'Asistiré ✓':'Voy a ir'}</button>
+      </div>
+    </div>
+    <div class="grid g2" style="grid-template-columns:2fr 1fr; align-items:flex-start;">
+      <div>
+        <div class="section-title" style="margin-bottom:14px;"><span class="dot"></span>Sobre el evento</div>
+        <div class="panel panel-pad" style="margin-bottom:22px;">
+          <p style="font-size:13px; color:var(--mute); line-height:1.6;">${e.desc||'Sin descripción todavía.'}</p>
+          ${e.info && e.info.length ? `<div style="margin-top:14px; display:flex; flex-direction:column; gap:6px;">${e.info.map(i=>`<div style="font-size:12px; color:var(--mute); display:flex; gap:8px; align-items:flex-start;"><span style="color:var(--magenta);">·</span>${i}</div>`).join('')}</div>` : ''}
+        </div>
+        <div class="section-title" style="margin-bottom:14px;"><span class="dot"></span>Música asociada</div>
+        <div style="margin-bottom:22px;">${musicHTML}</div>
+        <div class="section-title" style="margin-bottom:14px;"><span class="dot"></span>Comentarios</div>
+        <div class="panel panel-pad">
+          ${commentsBlockHTML('event', e.id, e.comments)}
+        </div>
+      </div>
+      <div class="panel panel-pad">
+        <div class="section-title" style="margin-bottom:14px;"><span class="dot"></span>Quién va (${attendees.length})</div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          ${attendees.length ? attendees.map(name=>{
+            const isMe = name===USER.name;
+            const color = isMe ? 'linear-gradient(135deg,var(--violet),var(--magenta))' : (FRIENDS.find(x=>x.name===name)||{color:'var(--violet)'}).color;
+            return `<div style="display:flex; gap:10px; align-items:center;"><div class="avatar" style="width:30px;height:30px;font-size:11px;background:${color}">${getInitials(name)}</div><span style="font-size:12.5px;">${isMe?USER.name+' (tú)':name}</span></div>`;
+          }).join('') : `<p style="font-size:11.5px; color:var(--mute-2);">Todavía nadie ha confirmado asistencia.</p>`}
+        </div>
+      </div>
+    </div>
+  </div>`;
 }
 
 /* ---------- VIEW: PROFILE ---------- */
@@ -3335,11 +3924,11 @@ function scrollChat(){
 /* ---------- EVENT CARD (compact) ---------- */
 function eventCard(e){
   return `
-  <div class="event-card">
+  <a href="#/event/${e.id}" class="event-card">
     <div class="event-date-block"><b>${e.day}</b><span>${e.month}</span></div>
     <div class="event-info"><h4>${e.name}</h4><p>${e.place}</p></div>
-    <button class="pill-btn ghost" style="padding:8px 12px; font-size:11px;" onclick="toggleGoing('${e.id}')">${e.going?'✓':'Voy'}</button>
-  </div>`;
+    <button class="pill-btn ghost" style="padding:8px 12px; font-size:11px;" onclick="event.preventDefault(); event.stopPropagation(); toggleGoing('${e.id}')">${e.going?'✓':'Voy'}</button>
+  </a>`;
 }
 
 /* ---------- MEMORY DRAWER ---------- */
@@ -4047,6 +4636,7 @@ function renderView(){
   else if(match = state.route.match(/^community\/(.+)$/)) html = viewCommunityDetail(match[1]);
   else if(state.route==='ai') html = viewAI();
   else if(state.route==='events') html = viewEvents();
+  else if(match = state.route.match(/^event\/(.+)$/)) html = viewEventDetail(match[1]);
   else if(state.route==='profile') html = viewProfile();
   else html = viewHome();
   view.innerHTML = html;
@@ -4054,7 +4644,10 @@ function renderView(){
   // update nav active state without full shell rerender flicker
   document.querySelectorAll('.nav-item, .bottom-nav a').forEach(a=>{
     const r = a.getAttribute('href').replace('#/','');
-    a.classList.toggle('active', r===state.route);
+    const isActive = r===state.route
+      || (r==='communities' && state.route.startsWith('community/'))
+      || (r==='events' && state.route.startsWith('event/'));
+    a.classList.toggle('active', isActive);
   });
 
   killGalaxies();

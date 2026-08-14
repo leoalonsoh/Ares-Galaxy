@@ -215,22 +215,29 @@ main{flex:1; padding:26px 30px 90px;}
   width:100%; aspect-ratio:1; border-radius:12px; margin-bottom:12px; position:relative; overflow:hidden;
   display:flex; align-items:center; justify-content:center;
 }
+/* El botón de reproducir SIEMPRE es visible — nunca depende de :hover, que
+   no existe en pantallas táctiles y hacía que la única forma de reproducir
+   una canción fuera casi invisible en muchos dispositivos. */
 .song-art .play-ring{
-  width:38px; height:38px; border-radius:50%; background:rgba(5,3,8,.55); backdrop-filter:blur(4px);
-  border:1px solid rgba(255,255,255,.3); display:flex; align-items:center; justify-content:center;
-  opacity:0; transition:opacity .18s, transform .18s; transform:scale(.8);
+  width:42px; height:42px; border-radius:50%; background:rgba(5,3,8,.7); backdrop-filter:blur(4px);
+  border:1px solid rgba(255,255,255,.4); display:flex; align-items:center; justify-content:center;
+  opacity:1; transition:opacity .18s, transform .18s, box-shadow .18s; transform:scale(1);
+  box-shadow:0 4px 16px rgba(0,0,0,.35);
 }
-.song-card:hover .play-ring{opacity:1; transform:scale(1);}
-.song-art .play-ring svg{width:13px; height:13px; fill:#fff;}
-.play-ring.is-unplayable{background:rgba(5,3,8,.4); border-style:dashed; border-color:rgba(255,255,255,.22);}
-.play-ring.is-unplayable svg{fill:none; stroke:rgba(255,255,255,.7); opacity:.75;}
-.song-art-artist-btn{
-  position:absolute; top:8px; right:8px; width:26px; height:26px; border-radius:50%;
-  background:rgba(5,3,8,.55); backdrop-filter:blur(4px); border:1px solid rgba(255,255,255,.25);
-  opacity:0; transition:opacity .18s; color:#fff;
+.song-card:hover .play-ring{border-color:var(--violet); box-shadow:0 6px 20px rgba(123,92,250,.4);}
+.song-art .play-ring svg{width:15px; height:15px; fill:#fff;}
+.play-ring.is-unplayable{background:rgba(5,3,8,.55); border-style:dashed; border-color:rgba(255,255,255,.3);}
+.play-ring.is-unplayable svg{fill:none; stroke:rgba(255,255,255,.75); opacity:.8;}
+.song-art-queue-btn, .song-art-artist-btn{
+  position:absolute; top:8px; width:26px; height:26px; border-radius:50%;
+  background:rgba(5,3,8,.6); backdrop-filter:blur(4px); border:1px solid rgba(255,255,255,.3);
+  opacity:1; transition:opacity .18s, border-color .18s; color:#fff;
 }
-.song-art-artist-btn svg{width:12px; height:12px;}
-.song-card:hover .song-art-artist-btn{opacity:1;}
+.song-art-artist-btn{right:8px;}
+.song-art-queue-btn{left:8px;}
+.song-art-queue-btn svg, .song-art-artist-btn svg{width:12px; height:12px;}
+.song-card:hover .song-art-artist-btn, .song-card:hover .song-art-queue-btn{border-color:var(--violet);}
+.song-card{cursor:pointer;}
 .song-title{font-weight:600; font-size:13.5px; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .song-artist{font-size:11.5px; color:var(--mute); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .song-meta-row{display:flex; align-items:center; justify-content:space-between; margin-top:10px;}
@@ -247,6 +254,8 @@ main{flex:1; padding:26px 30px 90px;}
 .mini-btn svg{width:13px; height:13px;}
 .mini-btn:hover{color:var(--white); border-color:var(--violet);}
 .mini-btn.saved{color:var(--amber); border-color:var(--amber);}
+.mini-btn.is-unplayable{border-style:dashed; opacity:.75;}
+.song-row-flat:hover{border-color:var(--violet);}
 
 /* artwork gradient palette classes cycling */
 .art-1{background:linear-gradient(135deg,#7B5CFA,#2A1B5C);}
@@ -336,6 +345,12 @@ main{flex:1; padding:26px 30px 90px;}
 .galaxy-hint{position:absolute; left:18px; bottom:16px; font-family:'JetBrains Mono'; font-size:10.5px; color:var(--mute); background:rgba(5,3,8,.55); backdrop-filter:blur(6px); padding:7px 11px; border-radius:20px; border:1px solid var(--line-soft);}
 .galaxy-legend{position:absolute; right:18px; top:16px; display:flex; flex-direction:column; gap:7px; font-family:'JetBrains Mono'; font-size:10px; color:var(--mute); background:rgba(5,3,8,.55); backdrop-filter:blur(6px); padding:10px 12px; border-radius:14px; border:1px solid var(--line-soft);}
 .galaxy-legend div{display:flex; align-items:center; gap:7px;}
+.galaxy-zoom-controls{
+  position:absolute; right:18px; bottom:16px; display:flex; align-items:center; gap:6px;
+  background:rgba(5,3,8,.55); backdrop-filter:blur(6px); padding:6px; border-radius:20px; border:1px solid var(--line-soft);
+}
+.galaxy-zoom-controls .icon-btn{width:28px; height:28px; background:var(--panel-2);}
+.galaxy-zoom-label{font-family:'JetBrains Mono'; font-size:10px; color:var(--mute); min-width:36px; text-align:center;}
 .legend-dot{width:8px; height:8px; border-radius:50%; flex:none;}
 
 /* Node detail drawer */
@@ -1013,6 +1028,20 @@ function hashStr(s){
   for(let i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
   return h >>> 0;
 }
+// CRÍTICO: JSON.stringify(array) produce comillas DOBLES ("como esto"), y
+// todos los atributos onclick="…" de esta app también usan comillas dobles.
+// Insertar un array serializado sin escapar dentro de un onclick="…" corta
+// el atributo HTML en la primera comilla — el resto del JS queda cortado a
+// la mitad y el navegador ni siquiera intenta ejecutarlo. Ese era el motivo
+// real por el que ninguna canción sonaba: cualquier onclick que pasara una
+// lista de contexto (playListContext, openSongDetail con ctxIds, etc.)
+// quedaba roto en el HTML generado. attrJson() escapa esas comillas a
+// entidades HTML (&quot;) para que el atributo llegue completo — el
+// navegador las decodifica de vuelta a comillas reales antes de ejecutar el
+// JavaScript, así que el comportamiento en tiempo de ejecución no cambia.
+function attrJson(arr){
+  return JSON.stringify(arr||[]).replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 
 let current = null; // { songId, kind:'spotify'|'youtube', paused:boolean }
 
@@ -1217,6 +1246,31 @@ function buildGalaxyGraph(){
     addEdge('me','comm-'+c.id);
   });
 
+  // Constelaciones por artista: conecta canciones reales entre sí cuando
+  // comparten artista — así una canción deja de ser un punto aislado y se
+  // puede navegar "canción → artista → otras canciones de ese artista".
+  // Spotify retiró su endpoint de "artistas similares" en nov. 2024, así que
+  // NUNCA inventamos una conexión de "artista parecido" con IA — solo
+  // agrupamos por autoría real (mismo artistId de Spotify si lo tenemos, o
+  // el mismo nombre de artista como respaldo).
+  const artistGroups = {};
+  Object.values(nodes).filter(n=>n.type==='song').forEach(n=>{
+    const song = findSong(n.songId);
+    if(!song || !song.artist) return;
+    const key = (song.artistIds && song.artistIds[0]) ? 'aid|'+song.artistIds[0] : 'aname|'+song.artist.toLowerCase();
+    if(!artistGroups[key]) artistGroups[key] = { name:song.artist, artistId:(song.artistIds&&song.artistIds[0])||null, songNodeIds:[] };
+    if(!artistGroups[key].songNodeIds.includes(n.id)) artistGroups[key].songNodeIds.push(n.id);
+  });
+  Object.entries(artistGroups).forEach(([key, group])=>{
+    if(group.songNodeIds.length < 2) return; // constelación real solo si hay 2+ canciones reales del mismo artista
+    const hubId = 'artist|'+key;
+    nodes[hubId] = {
+      id:hubId, type:'artistHub', label:group.name, ring:2, artistName:group.name, artistId:group.artistId,
+      songIds: group.songNodeIds.map(sid=>nodes[sid].songId)
+    };
+    group.songNodeIds.forEach(sid=> addEdge(hubId, sid));
+  });
+
   // degree
   const degree = {};
   edges.forEach(e=>{ degree[e.a]=(degree[e.a]||0)+1; degree[e.b]=(degree[e.b]||0)+1; });
@@ -1234,7 +1288,7 @@ function buildGalaxyGraph(){
 }
 
 const NODE_COLORS = {
-  me:'#F5F3FF', song:'#7B5CFA', tag:'#3D7BFF', place:'#F5A623', person:'#FF3DBE', community:'#FF3DBE', friend:'#FF3DBE'
+  me:'#F5F3FF', song:'#7B5CFA', tag:'#3D7BFF', place:'#F5A623', person:'#FF3DBE', community:'#FF3DBE', friend:'#FF3DBE', artistHub:'#3DDCFF'
 };
 
 let activeGalaxies = [];
@@ -1264,6 +1318,19 @@ function mountGalaxy(canvasId, opts){
   let lastPointerX = 0;
   let hoverId = null;
   let velocity = 0;
+
+  // Zoom real: acerca/aleja la disposición de la galaxia alrededor de "Tú"
+  // (el centro fijo de tu universo musical). Funciona con la rueda del
+  // mouse, con pellizco de dos dedos en pantallas táctiles, y con los
+  // controles +/−/reset superpuestos — todos mueven el mismo estado real,
+  // no una animación de mentira.
+  const ZOOM_MIN = 0.4, ZOOM_MAX = 3.2;
+  let zoom = 1;
+  const zoomLabelEl = document.getElementById(canvasId+'-zoom-label');
+  function updateZoomLabel(){ if(zoomLabelEl) zoomLabelEl.textContent = Math.round(zoom*100)+'%'; }
+  function setZoom(z){ zoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, z)); updateZoomLabel(); }
+  const activePointers = new Map();
+  let pinchStartDist = null, pinchStartZoom = 1;
 
   // Capas de profundidad: nebulosas (fondo, muy lentas), estrellas lejanas
   // (con leve paralaje) y polvo cercano (dust, ya existía) — dan sensación
@@ -1300,14 +1367,18 @@ function mountGalaxy(canvasId, opts){
   function layout(t){
     const cx = W/2, cy = H/2 - 6;
     const base = Math.min(W,H);
-    const R1 = base*0.26, R2 = base*0.44;
+    // El zoom escala las órbitas alrededor de "Tú" (el centro fijo del
+    // universo): acercarse separa las estrellas para poder tocar una sola;
+    // alejarse las junta para ver todo el mapa musical de un vistazo.
+    const R1 = base*0.26*zoom, R2 = base*0.44*zoom;
     const rot = rotation + dragOffset;
+    const rZoom = Math.min(1.6, Math.max(0.6, zoom)); // radio de los nodos: crece/encoge con el zoom, sin volverse ilegible
     graph.nodes.forEach(n=>{
       if(n.type==='me'){ n.wx=0; n.wy=0; }
       else {
         const R = n.ring===1 ? R1 : R2;
         const a = n.angle + rot * (n.ring===1?1:0.62);
-        const wob = Math.sin(t*0.0009 + n.wobble)*6;
+        const wob = Math.sin(t*0.0009 + n.wobble)*6*zoom;
         n.wx = Math.cos(a) * (R+wob);
         n.wy = Math.sin(a) * (R+wob) * 0.56; // flatten into a disc
       }
@@ -1315,7 +1386,7 @@ function mountGalaxy(canvasId, opts){
       n.sy = cy + n.wy + Math.sin(t*0.0011 + (n.wobble||0))*3;
       n.visible = nodeVisible(n);
       let base_r = n.type==='me' ? Math.min(26, base*0.05) : n.type==='song' ? (n.minor?7:9) + Math.min(n.degree,4)*1.1 : 6 + Math.min(n.degree,5)*1.1;
-      n.r = base_r;
+      n.r = base_r * rZoom;
     });
   }
 
@@ -1438,10 +1509,27 @@ function mountGalaxy(canvasId, opts){
   }
 
   canvas.addEventListener('pointerdown', (e)=>{
-    dragging = true; lastPointerX = e.clientX;
-    canvas.setPointerCapture(e.pointerId);
+    activePointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
+    if(interactive && activePointers.size===2){
+      // Segundo dedo llega: arranca el pellizco real y suelta el arrastre
+      // de rotación mientras dure (para no mezclar rotar con zoom a la vez).
+      const pts = [...activePointers.values()];
+      pinchStartDist = Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y);
+      pinchStartZoom = zoom;
+      dragging = false;
+    } else {
+      dragging = true; lastPointerX = e.clientX;
+    }
+    try{ canvas.setPointerCapture(e.pointerId); }catch(_){ /* pointer ya liberado, no crítico */ }
   });
   canvas.addEventListener('pointermove', (e)=>{
+    if(activePointers.has(e.pointerId)) activePointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
+    if(interactive && activePointers.size===2 && pinchStartDist){
+      const pts = [...activePointers.values()];
+      const dist = Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y);
+      setZoom(pinchStartZoom * (dist/pinchStartDist));
+      return;
+    }
     const p = getPos(e);
     if(dragging && interactive){
       const dx = e.clientX - lastPointerX;
@@ -1455,17 +1543,33 @@ function mountGalaxy(canvasId, opts){
       canvas.style.cursor = h ? 'pointer' : (interactive?'grab':'pointer');
     }
   });
-  window.addEventListener('pointerup', ()=>{ dragging=false; });
+  window.addEventListener('pointerup', (e)=>{
+    activePointers.delete(e.pointerId);
+    if(activePointers.size<2) pinchStartDist = null;
+    dragging = activePointers.size===1;
+  });
   canvas.addEventListener('pointerleave', ()=>{ if(!dragging){ hoverId=null; } });
+  if(interactive){
+    // Rueda del mouse = zoom real (no scroll de página): acercarse separa
+    // las estrellas para tocar una en concreto, alejarse las junta para ver
+    // todo el universo. Centrado siempre en "Tú", nunca en el cursor, para
+    // que nunca se pierda la orientación al hacer zoom.
+    canvas.addEventListener('wheel', (e)=>{
+      e.preventDefault();
+      setZoom(zoom * (e.deltaY > 0 ? 0.9 : 1/0.9));
+    }, { passive:false });
+  }
   canvas.addEventListener('click', (e)=>{
     const p = getPos(e);
     const h = findHover(p.x,p.y);
     if(!interactive){ if(opts.onClick) opts.onClick(); return; }
     if(!h || h.type==='me') return;
-    // La galaxia ES el reproductor: un click en una canción la reproduce/pausa
-    // directamente. Para ver el detalle (memoria, portada, etc.) doble click.
+    // Un click en cualquier nodo abre su panel de detalle real — igual que
+    // en el resto de la plataforma. Para una canción, ese panel siempre trae
+    // la acción de Reproducir a un toque de distancia (más agregar a la
+    // cola y convertir en recuerdo), nunca solo la portada y el título.
     if(h.type==='song'){
-      togglePreview(h.songId);
+      openSongDetail(h.songId);
       return;
     }
     state.drawer = { kind:'node', node: h };
@@ -1476,13 +1580,28 @@ function mountGalaxy(canvasId, opts){
     const p = getPos(e);
     const h = findHover(p.x,p.y);
     if(!h || h.type==='me') return;
+    if(h.type==='song'){ openSongDetail(h.songId); return; }
     state.drawer = { kind:'node', node: h };
     renderOverlays();
   });
 
   const g = { raf:null, onResize, canvasEl:canvas };
+  g.setZoom = setZoom;
+  g.getZoom = ()=>zoom;
   activeGalaxies.push(g);
   g.raf = requestAnimationFrame(frame);
+}
+
+function findGalaxyByCanvas(canvasId){
+  return activeGalaxies.find(g=>g.canvasEl && g.canvasEl.id===canvasId);
+}
+function galaxyZoomBy(canvasId, factor){
+  const g = findGalaxyByCanvas(canvasId);
+  if(g && g.setZoom) g.setZoom(g.getZoom()*factor);
+}
+function galaxyZoomReset(canvasId){
+  const g = findGalaxyByCanvas(canvasId);
+  if(g && g.setZoom) g.setZoom(1);
 }
 
 /* ===== ARES GALAXY — INTEGRACIÓN REAL: SPOTIFY (OAuth 2.0 + PKCE) =====
@@ -2159,10 +2278,10 @@ function onSeekBarClick(evt, el){
 }
 // ---- Cola: agregar / quitar / reordenar / reproducir ya ----
 function queueAdd(songId){
-  if(!state.queue.includes(songId)) state.queue.push(songId);
-  else toast('Esa canción ya está en tu cola');
+  if(state.queue.includes(songId)){ toast('Esa canción ya está en tu cola'); return; }
+  state.queue.push(songId);
   toast('Agregada a la cola');
-  renderQueuePanel(); renderExpandedPlayer();
+  renderQueuePanel(); renderExpandedPlayer(); renderMiniPlayer();
 }
 function queuePlayNext(songId){
   state.queue = state.queue.filter(id=>id!==songId);
@@ -2536,10 +2655,41 @@ function sourceBadge(s){
   const color = meta ? meta.color : 'var(--mute)';
   return `<span class="chip" style="border-color:${color}66; color:${color};" title="Fuente: ${label}">${label}</span>`;
 }
+/* ---------- FILA COMPACTA DE CANCIÓN (reusable en secciones asociativas:
+   Lugares, Amigos, Personas, Etapas, Comunidades, recuerdos, resultados de
+   búsqueda…) — SIEMPRE con: click en la fila = abrir el panel de detalle
+   real; ícono ▶ = reproducir/pausar directo; ícono + = agregar a la cola.
+   Ninguna sección deja una canción "solo visual". ---------- */
+function songRow(s, opts){
+  opts = opts || {};
+  const isCurrent = state.playing && state.playing.songId===s.id;
+  const isPlaying = isCurrent && !state.playing.paused;
+  const playable = songIsPlayable(s);
+  const ctxIds = opts.ctxIds || null;
+  const ctxJson = ctxIds ? attrJson(ctxIds) : 'null';
+  const playCall = ctxIds ? `playListContext(${ctxJson}, '${s.id}')` : `togglePreview('${s.id}')`;
+  let icon = ICONS.play, title = 'Reproducir', unplayableClass = '';
+  if(isPlaying){ icon = ICONS.pause; title = 'Pausar'; }
+  else if(isCurrent){ icon = ICONS.play; title = 'Reanudar'; }
+  else if(!playable){ icon = s.source==='spotify' ? ICONS.link : ICONS.volumeMute; title = s.source==='spotify' ? 'Abrir en Spotify' : 'Sin audio conectado'; unplayableClass = 'is-unplayable'; }
+  const inQueue = state.queue.includes(s.id);
+  const size = opts.size || 40;
+  return `
+  <div class="${opts.bare?'':'panel panel-pad'} song-row-flat" style="display:flex; gap:10px; align-items:center; cursor:pointer;" onclick="openSongDetail('${s.id}', ${ctxJson})">
+    <div class="song-art ${songArtClass(s)}" style="width:${size}px;height:${size}px;margin:0;border-radius:9px; flex:none; ${songArtStyle(s)}"></div>
+    <div style="flex:1; min-width:0;">
+      <div style="font-size:12px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.title}</div>
+      <div style="font-size:10.5px; color:var(--mute); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.artist}${!playable?' · sin audio aquí':''}</div>
+    </div>
+    <button class="mini-btn ${unplayableClass}" title="${title}" onclick="event.stopPropagation(); ${isCurrent?`togglePreview('${s.id}')`:playCall}">${icon}</button>
+    <button class="mini-btn" title="${inQueue?'Ya está en tu cola':'Agregar a la cola'}" onclick="event.stopPropagation(); queueAdd('${s.id}')">${ICONS.plus}</button>
+  </div>`;
+}
 function songCard(s, ctxIds){
   const isCurrent = state.playing && state.playing.songId===s.id;
   const isPlaying = isCurrent && !state.playing.paused;
-  const playCall = ctxIds ? `playListContext(${JSON.stringify(ctxIds)}, '${s.id}')` : `togglePreview('${s.id}', event)`;
+  const ctxJson = ctxIds ? attrJson(ctxIds) : 'null';
+  const playCall = ctxIds ? `playListContext(${ctxJson}, '${s.id}')` : `togglePreview('${s.id}')`;
   // Honestidad visual: una canción sin fuente real conectada (importada, o
   // de una plataforma que ya no está conectada) NUNCA muestra el mismo
   // botón de "reproducir" que una canción de verdad reproducible — se ve
@@ -2552,10 +2702,16 @@ function songCard(s, ctxIds){
   else if(playable){ ringIcon = ICONS.play; ringTitle = 'Reproducir'; }
   else if(canOpenExternally){ ringIcon = ICONS.link; ringTitle = 'Reconecta Spotify para reproducirla aquí — mientras tanto la abrimos en Spotify'; ringClass = 'is-unplayable'; }
   else { ringIcon = ICONS.volumeMute; ringTitle = 'Sin audio conectado todavía — importada o sin plataforma activa'; ringClass = 'is-unplayable'; }
+  const inQueue = state.queue.includes(s.id);
+  // Toda la tarjeta es clickeable y abre el panel de detalle real de la
+  // canción (con Reproducir / Agregar a la cola / Convertir en recuerdo);
+  // el ícono de play, el de cola y el de artista son atajos rápidos que no
+  // abren el panel (event.stopPropagation en cada uno).
   return `
-  <div class="song-card ${isCurrent?'is-playing':''}">
+  <div class="song-card ${isCurrent?'is-playing':''}" onclick="openSongDetail('${s.id}', ${ctxJson})">
     <div class="song-art ${songArtClass(s)}" style="${songArtStyle(s)}">
-      <div class="play-ring ${isPlaying?'is-playing':''} ${ringClass}" onclick="${isCurrent?`togglePreview('${s.id}', event)`:playCall}" title="${ringTitle}">${ringIcon}</div>
+      <div class="play-ring ${isPlaying?'is-playing':''} ${ringClass}" onclick="event.stopPropagation(); ${isCurrent?`togglePreview('${s.id}')`:playCall}" title="${ringTitle}">${ringIcon}</div>
+      <button class="mini-btn song-art-queue-btn" title="${inQueue?'Ya está en tu cola':'Agregar a la cola'}" onclick="event.stopPropagation(); queueAdd('${s.id}')">${ICONS.plus}</button>
       <button class="mini-btn song-art-artist-btn" title="Explorar artista" onclick="event.stopPropagation(); exploreArtistUniverse('${(s.artist||'').replace(/'/g,"\\'")}', '${(s.artistIds&&s.artistIds[0])||''}')">${ICONS.artist}</button>
     </div>
     <div class="song-title">${s.title}</div>
@@ -2566,7 +2722,7 @@ function songCard(s, ctxIds){
         ${!playable ? `<span class="chip" style="border-color:var(--mute-2); color:var(--mute-2);" title="${ringTitle}">sin audio aquí</span>` : ''}
         ${sourceBadge(s)}
       </div>
-      <button class="mini-btn ${s.saved?'saved':''}" title="Guardar" onclick="toggleSave('${s.id}')">${ICONS.save}</button>
+      <button class="mini-btn ${s.saved?'saved':''}" title="Guardar" onclick="event.stopPropagation(); toggleSave('${s.id}')">${ICONS.save}</button>
     </div>
   </div>`;
 }
@@ -2622,12 +2778,7 @@ function viewDiscover(){
               <div style="font-size:11px; color:var(--mute); margin-top:2px;">${a?'Escuchando ahora':'Amigo/a musical'}</div>
             </div>
           </div>
-          ${a ? `
-          <div class="panel panel-pad" style="background:var(--panel-2); display:flex; gap:10px; align-items:center; cursor:pointer;" onclick="togglePreview('${a.song.id}')">
-            <div class="song-art ${songArtClass(a.song)}" style="width:36px;height:36px;margin:0;border-radius:8px; ${songArtStyle(a.song)}"></div>
-            <div style="flex:1; min-width:0;"><div style="font-size:11.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${a.song.title}</div><div style="font-size:10px; color:var(--mute);">${a.song.artist}</div></div>
-            <div class="play-ring" style="width:26px;height:26px;">${(state.playing && state.playing.songId===a.song.id && !state.playing.paused)?ICONS.pause:ICONS.play}</div>
-          </div>` : `<p style="font-size:11px; color:var(--mute-2); margin:0;">Conecta Spotify o YouTube para ver qué canción real le conectamos.</p>`}
+          ${a ? songRow(a.song, {size:36}) : `<p style="font-size:11px; color:var(--mute-2); margin:0;">Conecta Spotify o YouTube para ver qué canción real le conectamos.</p>`}
         </div>`;
       }).join('')}
     </div>`;
@@ -2888,11 +3039,7 @@ function viewCommunityDetail(id){
       <div class="panel panel-pad">
         <div class="section-title" style="margin-bottom:14px;"><span class="dot"></span>Playlist colaborativa</div>
         <div style="display:flex; flex-direction:column; gap:10px;">
-          ${SONGS.length ? SONGS.slice(0,4).map(s=>`
-            <div style="display:flex; gap:10px; align-items:center; cursor:pointer;" onclick="togglePreview('${s.id}')">
-              <div class="song-art ${songArtClass(s)}" style="width:38px;height:38px;margin:0;border-radius:8px; ${songArtStyle(s)}"></div>
-              <div style="flex:1; min-width:0;"><div style="font-size:12px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.title}</div><div style="font-size:10.5px; color:var(--mute);">${s.artist}</div></div>
-            </div>`).join('') : `<p style="font-size:11.5px; color:var(--mute-2);">Aún no hay canciones reales en tu galaxia para mostrar aquí.</p>`}
+          ${SONGS.length ? SONGS.slice(0,4).map(s=>songRow(s, {size:38, bare:true, ctxIds:SONGS.slice(0,4).map(x=>x.id)})).join('') : `<p style="font-size:11.5px; color:var(--mute-2);">Aún no hay canciones reales en tu galaxia para mostrar aquí.</p>`}
         </div>
       </div>
     </div>
@@ -3018,11 +3165,7 @@ function viewProfile(){
         </div>
         <div class="section-title" style="margin-bottom:14px;"><span class="dot"></span>Descubrimientos compartidos</div>
         <div style="display:flex; flex-direction:column; gap:10px;">
-          ${SONGS.filter(s=>s.saved).length ? SONGS.filter(s=>s.saved).slice(0,4).map(s=>`
-          <div class="panel panel-pad" style="display:flex; gap:12px; align-items:center; cursor:pointer;" onclick="togglePreview('${s.id}')">
-            <div class="song-art ${songArtClass(s)}" style="width:40px;height:40px;margin:0;border-radius:9px; ${songArtStyle(s)}"></div>
-            <div style="flex:1; min-width:0;"><div style="font-weight:600; font-size:12px;">${s.title}</div><div style="font-size:10.5px; color:var(--mute);">${s.artist}</div></div>
-          </div>`).join('') : `<p style="font-size:11px; color:var(--mute-2);">Aún no has guardado canciones.</p>`}
+          ${SONGS.filter(s=>s.saved).length ? SONGS.filter(s=>s.saved).slice(0,4).map(s=>songRow(s, {ctxIds:SONGS.filter(x=>x.saved).slice(0,4).map(x=>x.id)})).join('') : `<p style="font-size:11px; color:var(--mute-2);">Aún no has guardado canciones.</p>`}
         </div>
       </div>
     </div>
@@ -3063,10 +3206,10 @@ function buildMoments(){
 }
 function momentCard(m){
   return `
-  <div class="moment-card" onclick="playListContext(${JSON.stringify(m.ids)}, '${m.ids[0]}')">
+  <div class="moment-card" onclick="playListContext(${attrJson(m.ids)}, '${m.ids[0]}')">
     <div class="moment-icon">${ICONS[m.icon]||ICONS.sparkle}</div>
     <div class="moment-meta"><b>${m.label}</b><span>${m.ids.length} canción${m.ids.length===1?'':'es'}</span></div>
-    <button class="mini-btn" title="Reproducir este momento" onclick="event.stopPropagation(); playListContext(${JSON.stringify(m.ids)}, '${m.ids[0]}')">${ICONS.play}</button>
+    <button class="mini-btn" title="Reproducir este momento" onclick="event.stopPropagation(); playListContext(${attrJson(m.ids)}, '${m.ids[0]}')">${ICONS.play}</button>
   </div>`;
 }
 function viewGalaxy(){
@@ -3075,6 +3218,7 @@ function viewGalaxy(){
   const filters = [
     {id:'all', label:'Todo'},
     {id:'song', label:'Canciones'},
+    {id:'artistHub', label:'Constelaciones'},
     {id:'tag', label:'Etapas'},
     {id:'person', label:'Personas'},
     {id:'place', label:'Lugares'},
@@ -3087,7 +3231,7 @@ function viewGalaxy(){
       <div>
         <span class="page-eyebrow">MY GALAXY</span>
         <h1 class="page-title">El universo musical de ${USER.name.split(' ')[0]}.</h1>
-        <p class="page-sub">La galaxia es tu reproductor: toca una canción para escucharla, doble click para ver su historia. Arrastra para rotar.</p>
+        <p class="page-sub">La galaxia es tu reproductor: toca cualquier nodo para ver su detalle real y reproducirlo desde ahí. Arrastra para rotar, rueda del mouse o pellizca para hacer zoom.</p>
       </div>
     </div>
     ${moments.length ? `
@@ -3105,11 +3249,18 @@ function viewGalaxy(){
       <div class="galaxy-legend">
         <div><span class="legend-dot" style="background:var(--white)"></span>Tú</div>
         <div><span class="legend-dot" style="background:var(--violet)"></span>Canciones</div>
+        <div><span class="legend-dot" style="background:#3DDCFF"></span>Constelaciones (mismo artista)</div>
         <div><span class="legend-dot" style="background:var(--blue)"></span>Etapas / tags</div>
         <div><span class="legend-dot" style="background:var(--amber)"></span>Lugares</div>
         <div><span class="legend-dot" style="background:var(--magenta)"></span>Personas / amigos / comunidades</div>
       </div>
-      <div class="galaxy-hint">Click en una canción = reproducir · doble click = ver detalle</div>
+      <div class="galaxy-zoom-controls">
+        <button class="icon-btn" title="Acercar" onclick="galaxyZoomBy('full-galaxy-canvas', 1.3)">${ICONS.plus}</button>
+        <span id="full-galaxy-canvas-zoom-label" class="galaxy-zoom-label">100%</span>
+        <button class="icon-btn" title="Alejar" onclick="galaxyZoomBy('full-galaxy-canvas', 0.77)">−</button>
+        <button class="icon-btn" title="Vista general" onclick="galaxyZoomReset('full-galaxy-canvas')">${ICONS.galaxy}</button>
+      </div>
+      <div class="galaxy-hint">Click en cualquier nodo = ver detalle y reproducir</div>
     </div>
   </div>`;
 }
@@ -3144,11 +3295,13 @@ function chatBubble(m){
   return `<div class="msg ai"><span class="ai-tag">ARES AI</span>${m.text}
     ${m.songs && m.songs.length ? m.songs.map(id=>{
       const s = findSong(id); if(!s) return '';
-      return `<div class="chat-song-result">
+      const ctx = attrJson(m.songs);
+      return `<div class="chat-song-result" style="cursor:pointer;" onclick="openSongDetail('${s.id}', ${ctx})">
         <div class="mini-art ${songArtClass(s)}" style="${songArtStyle(s)}"></div>
         <div class="csr-meta"><b>${s.title}</b><span>${s.artist}</span></div>
-        <button class="mini-btn" onclick="togglePreview('${s.id}')" title="Reproducir">${(state.playing && state.playing.songId===s.id && !state.playing.paused)?ICONS.pause:ICONS.play}</button>
-        <button class="mini-btn ${s.saved?'saved':''}" onclick="toggleSave('${s.id}')">${ICONS.save}</button>
+        <button class="mini-btn" onclick="event.stopPropagation(); ${songIsPlayable(s) ? `playListContext(${ctx}, '${s.id}')` : `togglePreview('${s.id}')`}" title="Reproducir">${(state.playing && state.playing.songId===s.id && !state.playing.paused)?ICONS.pause:ICONS.play}</button>
+        <button class="mini-btn" onclick="event.stopPropagation(); queueAdd('${s.id}')" title="Agregar a la cola">${ICONS.plus}</button>
+        <button class="mini-btn ${s.saved?'saved':''}" onclick="event.stopPropagation(); toggleSave('${s.id}')" title="Guardar">${ICONS.save}</button>
       </div>`;
     }).join('') : ''}
   </div>`;
@@ -3196,8 +3349,68 @@ function openMemoryDrawer(id){
 }
 function closeDrawer(){ state.drawer = null; renderOverlays(); }
 
+/* ---------- PANEL DE DETALLE DE CANCIÓN (punto de entrada único) ----------
+   Toda canción visible en la plataforma — sin importar en qué sección
+   aparezca (Canciones, Lugares, Amigos, Personas, Etapas, Comunidades,
+   búsqueda, cola, etc.) — abre este mismo panel al hacer click. Desde aquí
+   siempre hay tres acciones reales: reproducir, agregar a la cola y
+   convertir en recuerdo. ctxIds es la lista de canciones "alrededor" (para
+   que Siguiente/Anterior tengan sentido real dentro de esa sección).
+*/
+function openSongDetail(songId, ctxIds){
+  state.drawer = { kind:'songDetail', songId, ctxIds: ctxIds || null };
+  renderOverlays();
+}
+function songDetailHTML(songId, ctxIds){
+  const s = findSong(songId);
+  if(!s) return '';
+  const playable = songIsPlayable(s);
+  const isCurrent = state.playing && state.playing.songId===s.id;
+  const isPlaying = isCurrent && !state.playing.paused;
+  const inQueue = state.queue.includes(s.id);
+  const linkedMemories = MEMORIES.filter(m=>m.songId===s.id);
+  const playAction = ctxIds && ctxIds.length ? `playListContext(${attrJson(ctxIds)}, '${s.id}')` : `togglePreview('${s.id}')`;
+  let playBtnHTML;
+  if(isPlaying) playBtnHTML = `<button class="pill-btn" style="flex:1; justify-content:center;" onclick="togglePreview('${s.id}')">${ICONS.pause} Pausar</button>`;
+  else if(isCurrent) playBtnHTML = `<button class="pill-btn" style="flex:1; justify-content:center;" onclick="togglePreview('${s.id}')">${ICONS.play} Reanudar</button>`;
+  else if(playable) playBtnHTML = `<button class="pill-btn" style="flex:1; justify-content:center;" onclick="${playAction}">${ICONS.play} Reproducir</button>`;
+  else if(s.source==='spotify') playBtnHTML = `<button class="pill-btn ghost" style="flex:1; justify-content:center;" onclick="openSpotifyExternally(findSong('${s.id}'))">${ICONS.link} Abrir en Spotify</button>`;
+  else playBtnHTML = `<button class="pill-btn ghost" style="flex:1; justify-content:center;" disabled title="Sin fuente de audio conectada" onclick="toast('Todavía no hay una fuente de audio real conectada para esta canción')">${ICONS.volumeMute} Sin audio aquí</button>`;
+  return `
+  <div class="drawer-overlay" onclick="if(event.target===this) closeDrawer()">
+    <div class="drawer">
+      <div class="song-art ${songArtClass(s)}" style="width:100%; aspect-ratio:16/9; border-radius:0; margin:0; display:flex; align-items:flex-end; padding:18px; position:relative; ${songArtStyle(s)}">
+        <button class="drawer-close" style="position:absolute; top:16px; right:16px; background:rgba(5,3,8,.5); border-color:rgba(255,255,255,.2);" onclick="closeDrawer()">${ICONS.close}</button>
+        ${!playable ? `<span class="chip" style="background:rgba(5,3,8,.6); backdrop-filter:blur(4px); border-color:rgba(255,255,255,.3);">sin audio aquí</span>` : ''}
+      </div>
+      <div class="drawer-body">
+        <span class="page-eyebrow">CANCIÓN${s.tag ? ' · '+s.tag : ''}</span>
+        <h3 style="font-size:20px; margin:4px 0 4px;">${s.title}</h3>
+        <div style="color:var(--mute); font-size:12.5px; margin-bottom:14px; cursor:pointer; display:inline-flex; align-items:center; gap:5px;" onclick="closeDrawer(); exploreArtistUniverse('${(s.artist||'').replace(/'/g,"\\'")}', '${(s.artistIds&&s.artistIds[0])||''}')">${s.artist} ${ICONS.artist}</div>
+        <div style="margin-bottom:16px;">${sourceBadge(s)}</div>
+        <div style="display:flex; gap:10px; margin-bottom:14px;">
+          ${playBtnHTML}
+          <button class="pill-btn ghost" style="flex:1; justify-content:center;" onclick="queueAdd('${s.id}')" ${inQueue?'disabled title="Ya está en tu cola"':''}>${ICONS.plus} ${inQueue?'En tu cola':'Agregar a la cola'}</button>
+        </div>
+        <button class="pill-btn" style="width:100%; justify-content:center; margin-bottom:16px; background:linear-gradient(135deg,var(--magenta),var(--violet));" onclick="closeDrawer(); openAddMemory('${s.id}')">${ICONS.heart} Convertir en recuerdo</button>
+        ${linkedMemories.length ? `
+        <div style="font-family:'JetBrains Mono'; font-size:10px; color:var(--amber); letter-spacing:.08em; margin-bottom:8px;">RECUERDOS CONECTADOS (${linkedMemories.length})</div>
+        ${linkedMemories.map(m=>`
+          <div class="panel panel-pad" style="background:var(--panel-2); margin-bottom:8px; cursor:pointer;" onclick="closeDrawer(); openMemoryDrawer('${m.id}')">
+            <div class="tag-picker" style="margin-bottom:6px;">${m.tags.map(t=>`<span class="tag-opt on" style="font-size:10px; padding:3px 8px;">${t}</span>`).join('')}</div>
+            <div style="font-size:11.5px; color:var(--mute);">${m.place} · ${m.people.join(', ')} · ${m.date}</div>
+          </div>`).join('')}
+        ` : `<p style="font-size:11.5px; color:var(--mute-2); margin:0;">Todavía no tiene ningún recuerdo — conviértela en recuerdo arriba para guardar dónde, con quién y cuándo la escuchaste.</p>`}
+      </div>
+    </div>
+  </div>`;
+}
+
 function drawerHTML(){
   if(!state.drawer) return '';
+  if(state.drawer.kind==='songDetail'){
+    return songDetailHTML(state.drawer.songId, state.drawer.ctxIds);
+  }
   if(state.drawer.kind==='memory'){
     const m = MEMORIES.find(x=>x.id===state.drawer.id);
     if(!m) return '';
@@ -3219,8 +3432,14 @@ function drawerHTML(){
             <div class="field" style="margin-bottom:0;"><label>${ICONS.pin.replace(/width="18" height="18"/,'width="11" height="11"')} LUGAR</label><div style="font-size:13px;">${m.place}</div></div>
             <div class="field" style="margin-bottom:0;"><label>${ICONS.users.replace(/width="18" height="18"/,'width="11" height="11"')} PERSONAS</label><div style="font-size:13px;">${m.people.join(', ')}</div></div>
           </div>
+          ${m.time ? `<div class="field"><label>${ICONS.clock.replace(/width="18" height="18"/,'width="11" height="11"')} HORA</label><div style="font-size:13px;">${m.time}</div></div>` : ''}
           <div class="field"><label>ETIQUETAS</label><div class="tag-picker">${m.tags.map(t=>`<span class="tag-opt on">${t}</span>`).join('')}</div></div>
-          ${m.songId && findSong(m.songId) ? `<button class="pill-btn" style="width:100%; justify-content:center; margin-top:8px;" onclick="togglePreview('${m.songId}')">${(state.playing && state.playing.songId===m.songId && !state.playing.paused)?ICONS.pause+' Pausar':ICONS.play+' Reproducir'}</button>` : ''}
+          ${m.songId && findSong(m.songId) ? `
+          <div style="display:flex; gap:10px; margin-top:8px;">
+            <button class="pill-btn" style="flex:1; justify-content:center;" onclick="togglePreview('${m.songId}')">${(state.playing && state.playing.songId===m.songId && !state.playing.paused)?ICONS.pause+' Pausar':ICONS.play+' Reproducir'}</button>
+            <button class="pill-btn ghost" style="flex:1; justify-content:center;" onclick="queueAdd('${m.songId}')">${ICONS.plus} Cola</button>
+          </div>
+          <button class="btn-line" style="width:100%; margin-top:10px;" onclick="closeDrawer(); openSongDetail('${m.songId}')">${ICONS.disc} Ver detalle de la canción</button>` : ''}
         </div>
       </div>
     </div>`;
@@ -3232,7 +3451,7 @@ function drawerHTML(){
 }
 
 function nodeDrawerHTML(node){
-  const typeLabel = {me:'Tú', song:'Canción', tag:'Etapa / momento', place:'Lugar', person:'Persona', community:'Comunidad', friend:'Amigo/a musical'}[node.type] || node.type;
+  const typeLabel = {me:'Tú', song:'Canción', tag:'Etapa / momento', place:'Lugar', person:'Persona', community:'Comunidad', friend:'Amigo/a musical', artistHub:'Artista · constelación'}[node.type] || node.type;
   const linkedSongs = (node.songIds||[]).map(findSong).filter(Boolean);
   let extra = '';
   if(node.type==='song'){
@@ -3252,8 +3471,9 @@ function nodeDrawerHTML(node){
         </div>` : `<p class="page-sub" style="margin-bottom:16px;">Aún no tiene una memoria asociada.</p>`}
         <div style="display:flex; gap:10px;">
           <button class="pill-btn" style="flex:1; justify-content:center;" onclick="togglePreview('${node.songId}')">${(state.playing && state.playing.songId===node.songId && !state.playing.paused)?ICONS.pause+' Pausar':ICONS.play+' Reproducir'}</button>
-          <button class="pill-btn ghost" style="flex:1; justify-content:center;" onclick="closeDrawer(); openAddMemory('${node.songId}')">${ICONS.plus} Memoria</button>
+          <button class="pill-btn ghost" style="flex:1; justify-content:center;" onclick="queueAdd('${node.songId}')">${ICONS.plus} Cola</button>
         </div>
+        <button class="pill-btn" style="width:100%; justify-content:center; margin-top:10px;" onclick="closeDrawer(); openAddMemory('${node.songId}')">${ICONS.heart} Convertir en recuerdo</button>
         ${song ? `<button class="btn-line" style="width:100%; margin-top:10px;" onclick="closeDrawer(); exploreArtistUniverse('${(song.artist||'').replace(/'/g,"\\'")}', '${(song.artistIds&&song.artistIds[0])||''}')">${ICONS.artist} Explorar a ${song.artist}</button>` : ''}
       </div>`;
   } else {
@@ -3271,17 +3491,15 @@ function nodeDrawerHTML(node){
           node.type==='friend' ? 'Está escuchando esta canción real ahora mismo en tu galaxia — vista ilustrativa (mostrar su actividad real requeriría que también conectara su cuenta a un backend compartido), pero la canción conectada es 100% real y reproducible.' :
           node.type==='person' ? 'Esta persona aparece en varios recuerdos musicales tuyos.' :
           node.type==='place' ? 'Este lugar está conectado con canciones importantes de tu historia.' :
+          node.type==='artistHub' ? `Constelación real: todas las canciones de ${node.artistName} que ya tienes en tu galaxia, conectadas entre sí porque comparten artista.` :
           'Esta etapa agrupa canciones que definieron un momento de tu vida.'
         }</p>
         <div style="font-family:'JetBrains Mono'; font-size:10.5px; color:var(--mute); margin-bottom:10px;">CANCIONES CONECTADAS (${linkedSongs.length})</div>
         <div style="display:flex; flex-direction:column; gap:10px;">
-          ${linkedSongs.map(s=>`
-          <div class="panel panel-pad" style="display:flex; gap:12px; align-items:center; cursor:pointer;" onclick="playListContext(${JSON.stringify(linkedSongs.map(x=>x.id))}, '${s.id}')">
-            <div class="song-art ${songArtClass(s)}" style="width:40px;height:40px;margin:0;border-radius:9px; ${songArtStyle(s)}"></div>
-            <div style="flex:1; min-width:0;"><div style="font-weight:600; font-size:12px;">${s.title}</div><div style="font-size:10.5px; color:var(--mute);">${s.artist}</div></div>
-          </div>`).join('') || '<p style="font-size:12px; color:var(--mute-2);">Sin canciones conectadas todavía.</p>'}
+          ${linkedSongs.map(s=>songRow(s, {ctxIds:linkedSongs.map(x=>x.id)})).join('') || '<p style="font-size:12px; color:var(--mute-2);">Sin canciones conectadas todavía.</p>'}
         </div>
         ${node.type==='community' ? `<a href="#/community/${node.commId}" class="pill-btn" style="width:100%; justify-content:center; margin-top:18px;" onclick="closeDrawer()">Ver comunidad</a>` : ''}
+        ${node.type==='artistHub' ? `<button class="btn-line" style="width:100%; margin-top:10px;" onclick="closeDrawer(); exploreArtistUniverse('${(node.artistName||'').replace(/'/g,"\\'")}', '${node.artistId||''}')">${ICONS.artist} Explorar todo el universo de ${node.artistName}</button>` : ''}
       </div>`;
   }
   return `<div class="drawer-overlay" onclick="if(event.target===this) closeDrawer()"><div class="drawer">${extra}</div></div>`;
@@ -3445,8 +3663,9 @@ function modalHTML(){
           </div>
           <div class="field-row">
             <div class="field"><label>FECHA</label><input type="date" id="mm-date"/></div>
-            <div class="field"><label>UBICACIÓN</label><input type="text" id="mm-place" placeholder="Ej. Bogotá"/></div>
+            <div class="field"><label>HORA (OPCIONAL)</label><input type="time" id="mm-time"/></div>
           </div>
+          <div class="field"><label>UBICACIÓN / LUGAR</label><input type="text" id="mm-place" placeholder="Ej. Bogotá, en la casa de Laura"/></div>
           <div class="field"><label>PERSONAS</label><input type="text" id="mm-people" placeholder="Ej. Laura, Santiago"/></div>
           <div class="field"><label>TU RECUERDO</label><textarea id="mm-note" placeholder="Cuenta la historia detrás de esta canción…"></textarea></div>
           <div class="field">
@@ -3475,6 +3694,7 @@ function submitMemory(){
     return;
   }
   const dateVal = document.getElementById('mm-date').value;
+  const timeVal = document.getElementById('mm-time') ? document.getElementById('mm-time').value : '';
   const place = document.getElementById('mm-place').value || 'Sin ubicación';
   const people = document.getElementById('mm-people').value.split(',').map(s=>s.trim()).filter(Boolean);
   const note = document.getElementById('mm-note').value || 'Un momento que se quedó pegado a esta canción.';
@@ -3487,7 +3707,7 @@ function submitMemory(){
     song: song ? song.title : manualTitle,
     artist: song ? song.artist : (manualArtist || 'Sin vincular todavía'),
     art: song ? song.art : 'art-5',
-    date:dateLabel, note, place, people: people.length?people:['Yo'], tags: tags.length?tags:['Nueva memoria'],
+    date:dateLabel, time:timeVal || null, note, place, people: people.length?people:['Yo'], tags: tags.length?tags:['Nueva memoria'],
     photo: state.modal.photoDataUrl || null
   };
   MEMORIES.unshift(newMem);
@@ -3936,10 +4156,11 @@ function renderSearchPanel(){
     inner = s.results.map(r=>{
       const inGalaxy = SONGS.some(x=>x.id===r.id && x.saved);
       return `
-      <div class="search-result-row">
+      <div class="search-result-row" style="cursor:pointer;" onclick="openSearchResultDetail('${r.id}')">
         <div style="flex:1; min-width:0;"><b>${r.title}</b><div style="font-size:11px; color:var(--mute);">${r.artist}</div></div>
-        <button class="mini-btn" onclick="playSearchResult('${r.id}')" title="Reproducir">${ICONS.play}</button>
-        <button class="mini-btn ${inGalaxy?'saved':''}" onclick="addSearchResultToGalaxy('${r.id}')" title="${inGalaxy?'Ya está en tu galaxia':'Agregar a tu galaxia'}">${inGalaxy?ICONS.save:ICONS.plus}</button>
+        <button class="mini-btn" onclick="event.stopPropagation(); playSearchResult('${r.id}')" title="Reproducir">${ICONS.play}</button>
+        <button class="mini-btn" onclick="event.stopPropagation(); queueSearchResult('${r.id}')" title="Agregar a la cola">${ICONS.queue}</button>
+        <button class="mini-btn ${inGalaxy?'saved':''}" onclick="event.stopPropagation(); addSearchResultToGalaxy('${r.id}')" title="${inGalaxy?'Ya está en tu galaxia':'Agregar a tu galaxia'}">${inGalaxy?ICONS.save:ICONS.plus}</button>
       </div>`;
     }).join('');
   }
@@ -3963,6 +4184,26 @@ function playSearchResult(id){
   if(!song) return;
   persist();
   playPreview(song);
+}
+function queueSearchResult(id){
+  const r = state.search.results.find(x=>x.id===id);
+  if(!r) return;
+  const song = songFromSpotifySearchTrack(r.raw);
+  if(!song) return;
+  persist();
+  queueAdd(song.id);
+}
+// Un resultado de búsqueda se vuelve una canción real de tu galaxia (con
+// portada real) en cuanto lo tocas — así el panel de detalle siempre tiene
+// algo real que mostrar, con las mismas tres acciones que cualquier otra
+// canción de la plataforma.
+function openSearchResultDetail(id){
+  const r = state.search.results.find(x=>x.id===id);
+  if(!r) return;
+  const song = songFromSpotifySearchTrack(r.raw);
+  if(!song) return;
+  persist();
+  openSongDetail(song.id, state.search.results.map(x=>{ const sg = songFromSpotifySearchTrack(x.raw); return sg && sg.id; }).filter(Boolean));
 }
 function clearSearch(){
   state.search = { query:'', results:[], loading:false, error:null };
